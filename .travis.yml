@@ -1,0 +1,13 @@
+language: go
+
+go:
+    - 1.7
+    - 1.8
+    - tip
+
+install:
+    - make install-tools
+    - go get -t -u ./...
+
+script:
+    - make ci-check
