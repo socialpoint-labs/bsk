@@ -95,7 +95,6 @@ func TestThrottleIsBasedOnIntervals(t *testing.T) {
 
 }
 
-
 //Test that the throttler is concurrent safe
 func TestThrottleConcurrency(t *testing.T) {
 	numExecutions = 0

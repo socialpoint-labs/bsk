@@ -3,10 +3,10 @@ package throttler_test
 import (
 	"fmt"
 
-	"github.com/socialpoint-labs/bsk/pkg/throttler"
-	"time"
+	"github.com/socialpoint-labs/bsk/throttler"
 	"golang.org/x/net/context"
 	"sync/atomic"
+	"time"
 )
 
 func ExampleThrottler_Throttle() {
@@ -18,7 +18,7 @@ func ExampleThrottler_Throttle() {
 	var executions uint32
 
 	action := &action{
-		in: channelIn,
+		in:         channelIn,
 		executions: &executions,
 	}
 
@@ -37,11 +37,11 @@ func ExampleThrottler_Throttle() {
 }
 
 type action struct {
-	in chan string
+	in         chan string
 	executions *uint32
 }
 
 func (a *action) Execute() {
-	<- a.in
+	<-a.in
 	atomic.AddUint32(a.executions, 1)
 }
