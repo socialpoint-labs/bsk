@@ -1,15 +1,25 @@
 # BSK [![Build Status](https://travis-ci.org/socialpoint-labs/bsk.svg?branch=master)](https://travis-ci.org/socialpoint-labs/bsk)
 
+## Packages
+
+There are two types of packages: 
+- `ext`: extensions to the stdlib, they augment stdlib package functionalities. Usually named after a stdlib package name plus `x`.
+- `new`: they provide logic not present in the stdlib.
+
+| Package          | Type  | Description                                           |
+| ---              | ----  | -----------                                           |
+| [`httpc`](httpc) | `ext` | Adds decorators to `http.Client`                      |
+| [`logx`](logx)   | `ext` | Adds structured logging and logstash support to `log` |
 
 ## Contributors
+
 This code was initially part of a private repository at Social Point.
 
 It's a collaborative effort of all the backend team!
 
 In order to simplify the process of moving the code to a public repository, original commits authors' could be lost.
- 
+
 Special thanks to all the people who has been collaborating (in alphabetical order):
- 
 
 - [Adán Lobato](https://github.com/adanlobato)
 - [Alex Carol](https://github.com/alexcarol)
