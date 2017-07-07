@@ -1,4 +1,4 @@
-package httpc_test
+package httpx_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/httpc"
+	"github.com/socialpoint-labs/bsk/httpx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,7 +46,7 @@ func (c *FailingClient) Do(*http.Request) (*http.Response, error) {
 func TestHeaderDecorator(t *testing.T) {
 	assert := assert.New(t)
 
-	client := httpc.Decorate(&NoopClient{}, httpc.Header("test", "123"))
+	client := httpx.DecorateClient(&NoopClient{}, httpx.Header("test", "123"))
 
 	req, err := http.NewRequest("GET", "http://example.com", nil)
 	assert.NoError(err)
@@ -61,7 +61,7 @@ func TestHeaderDecorator(t *testing.T) {
 func TestFaultTolerance(t *testing.T) {
 	assert := assert.New(t)
 
-	client := httpc.Decorate(&FailingClient{}, httpc.FaultTolerance(5, time.Millisecond))
+	client := httpx.DecorateClient(&FailingClient{}, httpx.FaultTolerance(5, time.Millisecond))
 
 	req, err := http.NewRequest("GET", "http://example.com", nil)
 	assert.NoError(err)
@@ -77,7 +77,7 @@ func TestLogger(t *testing.T) {
 
 	recorder := &bytes.Buffer{}
 
-	client := httpc.Decorate(&NoopClient{}, httpc.Logger(recorder))
+	client := httpx.DecorateClient(&NoopClient{}, httpx.Logger(recorder))
 
 	req, err := http.NewRequest("GET", "http://example.com", nil)
 	assert.NoError(err)
@@ -95,7 +95,7 @@ func TestLoggerf(t *testing.T) {
 	recorder := &bytes.Buffer{}
 
 	formatter := func(r *http.Request) string { return fmt.Sprintf("[%s][%s]", r.Method, r.URL.String()) }
-	client := httpc.Decorate(&NoopClient{}, httpc.Loggerf(recorder, formatter))
+	client := httpx.DecorateClient(&NoopClient{}, httpx.Loggerf(recorder, formatter))
 
 	req, err := http.NewRequest("GET", "http://example.com", nil)
 	assert.NoError(err)
@@ -110,13 +110,13 @@ func TestLoggerf(t *testing.T) {
 func TestFake(t *testing.T) {
 	assert := assert.New(t)
 
-	for _, fakes := range [][]httpc.FakeResponse{
-		{httpc.NewFake("foo", http.StatusOK)},
-		{httpc.NewFake("teapot", http.StatusTeapot)},
+	for _, fakes := range [][]httpx.FakeResponse{
+		{httpx.NewFake("foo", http.StatusOK)},
+		{httpx.NewFake("teapot", http.StatusTeapot)},
 		// multiple/successive
-		{httpc.NewFake("foo", http.StatusOK), httpc.NewFake("teapot", http.StatusTeapot)},
+		{httpx.NewFake("foo", http.StatusOK), httpx.NewFake("teapot", http.StatusTeapot)},
 	} {
-		client := httpc.Decorate(http.DefaultClient, httpc.Fake(fakes...))
+		client := httpx.DecorateClient(http.DefaultClient, httpx.Fake(fakes...))
 		assert.NotNil(client)
 
 		for _, fake := range fakes {
@@ -135,8 +135,8 @@ func TestFake(t *testing.T) {
 func TestConcurrentFake(t *testing.T) {
 	assert := assert.New(t)
 
-	r := httpc.NewFake("teapot", http.StatusTeapot)
-	client := httpc.Decorate(http.DefaultClient, httpc.Fake(r, r))
+	r := httpx.NewFake("teapot", http.StatusTeapot)
+	client := httpx.DecorateClient(http.DefaultClient, httpx.Fake(r, r))
 	assert.NotNil(client)
 
 	wg := &sync.WaitGroup{}
@@ -161,7 +161,7 @@ func TestConcurrentFake(t *testing.T) {
 func TestQueryDecorator(t *testing.T) {
 	assert := assert.New(t)
 
-	client := httpc.Decorate(&NoopClient{}, httpc.Query("test", "123"))
+	client := httpx.DecorateClient(&NoopClient{}, httpx.Query("test", "123"))
 
 	req, err := http.NewRequest("GET", "http://example.com", nil)
 	assert.NoError(err)
