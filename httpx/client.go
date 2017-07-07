@@ -1,6 +1,3 @@
-// Package httpc provides a set of features for easy extension of the default `net/http` client.
-// The idea is pretty simple, start with an http.DefaultClient and decorate it with the
-// extra functionality you need.
 package httpx
 
 import (
