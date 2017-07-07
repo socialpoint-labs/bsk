@@ -1,7 +1,7 @@
 // Package httpc provides a set of features for easy extension of the default `net/http` client.
 // The idea is pretty simple, start with an http.DefaultClient and decorate it with the
 // extra functionality you need.
-package httpc
+package httpx
 
 import (
 	"bytes"
@@ -40,11 +40,11 @@ func (f ClientFunc) Do(r *http.Request) (*http.Response, error) {
 	return f(r)
 }
 
-// A Decorator wraps a Client with extra behaviour.
-type Decorator func(Client) Client
+// A ClientDecorator wraps a Client with extra behaviour.
+type ClientDecorator func(Client) Client
 
-// Decorate decorates a Client with the given decorators in reverse order.
-func Decorate(c Client, ds ...Decorator) Client {
+// DecorateClient decorates a Client with the given decorators in reverse order.
+func DecorateClient(c Client, ds ...ClientDecorator) Client {
 	decorated := c
 	for i := len(ds) - 1; i >= 0; i-- {
 		decorated = ds[i](decorated)
@@ -54,7 +54,7 @@ func Decorate(c Client, ds ...Decorator) Client {
 
 // FaultTolerance returns a Decorator that extends a Client with fault tolerance
 // configured with the given attempts and backoff duration.
-func FaultTolerance(attempts int, backoff time.Duration) Decorator {
+func FaultTolerance(attempts int, backoff time.Duration) ClientDecorator {
 	return func(c Client) Client {
 		return ClientFunc(func(r *http.Request) (res *http.Response, err error) {
 			for i := 0; i <= attempts; i++ {
@@ -70,7 +70,7 @@ func FaultTolerance(attempts int, backoff time.Duration) Decorator {
 
 // Header returns a Decorator that adds the given HTTP header to every request
 // done by a Client.
-func Header(name, value string) Decorator {
+func Header(name, value string) ClientDecorator {
 	return func(c Client) Client {
 		return ClientFunc(func(r *http.Request) (*http.Response, error) {
 			r.Header.Add(name, value)
@@ -80,7 +80,7 @@ func Header(name, value string) Decorator {
 }
 
 // Logger returns a Decorator that logs HTTP requests to an io.Writer
-func Logger(w io.Writer) Decorator {
+func Logger(w io.Writer) ClientDecorator {
 	return Loggerf(w, func(r *http.Request) string {
 		return fmt.Sprintf("%s %s\n", r.Method, r.URL.String())
 	})
@@ -88,7 +88,7 @@ func Logger(w io.Writer) Decorator {
 
 // Loggerf returns a Decorator that logs HTTP requests to an io.Writer.
 // The output can be customized by passing a LoggerFormatter.
-func Loggerf(w io.Writer, f LoggerFormatter) Decorator {
+func Loggerf(w io.Writer, f LoggerFormatter) ClientDecorator {
 	return func(c Client) Client {
 		return ClientFunc(func(r *http.Request) (*http.Response, error) {
 			_, err := w.Write([]byte(f(r)))
@@ -115,7 +115,7 @@ func NewFake(content string, statusCode int) FakeResponse {
 // Fake returns a client Decorator making it respond with the provided status
 // code, but with every call it will return a different content with the
 // provided fakeResponses.
-func Fake(fakeResponses ...FakeResponse) Decorator {
+func Fake(fakeResponses ...FakeResponse) ClientDecorator {
 	return func(c Client) Client {
 		mu := &sync.Mutex{}
 		times := 0
@@ -137,7 +137,7 @@ func Fake(fakeResponses ...FakeResponse) Decorator {
 
 // Query returns a Decorator that adds the given HTTP query to every request
 // done by a Client.
-func Query(name string, value string) Decorator {
+func Query(name string, value string) ClientDecorator {
 	return func(c Client) Client {
 		return ClientFunc(func(r *http.Request) (*http.Response, error) {
 			q := r.URL.Query()
