@@ -10,3 +10,4 @@ install:
 
 script:
     - make ci-check
+    - goveralls -coverprofile=coverage-all.out
