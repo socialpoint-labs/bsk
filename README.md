@@ -1,4 +1,4 @@
-# BSK [![Build Status](https://travis-ci.org/socialpoint-labs/bsk.svg?branch=master)](https://travis-ci.org/socialpoint-labs/bsk) [![Coverage Status](https://coveralls.io/repos/github/socialpoint-labs/bsk/badge.svg?branch=master)](https://coveralls.io/github/socialpoint-labs/bsk?branch=master)
+# BSK [![Build Status](https://travis-ci.org/socialpoint-labs/bsk.svg?branch=master)](https://travis-ci.org/socialpoint-labs/bsk) [![Coverage Status](https://coveralls.io/repos/github/socialpoint-labs/bsk/badge.svg?branch=master)](https://coveralls.io/github/socialpoint-labs/bsk?branch=master)[![Go Report](https://goreportcard.com/badge/github.com/socialpoint-labs/bsk)](https://goreportcard.com/badge/github.com/socialpoint-labs/bsk)
 
 ## Packages
 
