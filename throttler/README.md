@@ -1,8 +1,8 @@
 # package throttler
 
-`package throttler` provides utilities to limit the execution of a set of actions
+`package throttler` provides utilities to limit the execution of a set of actions.
 
-A Typical scenario to use a throttler would be when we want to execute a large amount of actions against a remote 
+A typical scenario to use a throttler is when we want to execute a large amount of actions against a remote 
 service, but we don't want to cause a stampede.
 
 The throttler is configured based on 2 parameters, an amount `n` of actions to be executed, and a time lapse `t`. The 

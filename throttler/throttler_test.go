@@ -9,8 +9,10 @@ import (
 	"golang.org/x/net/context"
 )
 
-var mux sync.Mutex
-var numExecutions uint32
+var (
+	mux           sync.Mutex
+	numExecutions uint32
+)
 
 //Test that we can execute the number of actions allowed by the scheduler
 func TestExecuteActions(t *testing.T) {

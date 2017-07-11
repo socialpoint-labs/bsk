@@ -11,7 +11,8 @@ import (
 
 func ExampleThrottler_Throttle() {
 	ctx := context.Background()
-	th := throttler.NewThrottler(3, time.Second)
+	maxExecutions := 3
+	th := throttler.NewThrottler(maxExecutions, time.Second)
 	th.Start(ctx)
 
 	channelIn := make(chan string)
@@ -22,7 +23,7 @@ func ExampleThrottler_Throttle() {
 		executions: &executions,
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < maxExecutions*2; i++ {
 		err := th.Throttle(action)
 		if err == nil {
 			channelIn <- "hello"
