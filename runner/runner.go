@@ -1,4 +1,4 @@
-package server
+package runner
 
 import "context"
 
@@ -20,18 +20,16 @@ func (f RunnerFunc) Run(ctx context.Context) {
 	f(ctx)
 }
 
-// EmptyRunner is a Runner that does nothing for testing purposes only.
-func EmptyRunner() RunnerFunc {
+// Empty is a Runner that does nothing for testing purposes only.
+func Empty() RunnerFunc {
 	return func(context.Context) {
 		// don't do anything
 	}
 }
 
-// MultiRunner receives multiple Runners and returns a new RunnerFunc that
-// runs them in go-routines.
-// TODO: Should the MultiRunner be responsible of waiting for all the wrapped
-// runners termination if a cancellation occurs?
-func MultiRunner(runners ...Runner) RunnerFunc {
+// Multi receives multiple Runners and returns a new RunnerFunc that runs them
+// in go-routines.
+func Multi(runners ...Runner) RunnerFunc {
 	return func(ctx context.Context) {
 		for _, runner := range runners {
 			go runner.Run(ctx)
