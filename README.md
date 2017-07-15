@@ -11,6 +11,7 @@ There are two types of packages:
 | [`httpx`](httpx)   | `ext` | Extends package `net/http` with routing utilities, decorators, etc |
 | [`logx`](logx)     | `ext` | Adds structured logging and logstash support to `log`              |
 | [`server`](server) | `new` | Adds types like `Runner` to run application servers                |
+| [`timex`](timex)   | `ext` | Extends `time` with other time functions and utilities             |
 
 ## Contributors
 
