@@ -6,12 +6,13 @@ There are two types of packages:
 - `ext`: extensions to the stdlib, they augment stdlib package functionalities. Usually named after a stdlib package name plus `x`.
 - `new`: they provide logic not present in the stdlib.
 
-| Package            | Type  | Description                                                        |
-| ---                | ----  | -----------                                                        |
-| [`httpx`](httpx)   | `ext` | Extends package `net/http` with routing utilities, decorators, etc |
-| [`logx`](logx)     | `ext` | Adds structured logging and logstash support to `log`              |
-| [`server`](server) | `new` | Adds types like `Runner` to run application servers                |
-| [`timex`](timex)   | `ext` | Extends `time` with other time functions and utilities             |
+| Package              | Type  | Description                                                        |
+| ---                  | ----  | -----------                                                        |
+| [`httpx`](httpx)     | `ext` | Extends package `net/http` with routing utilities, decorators, etc |
+| [`logx`](logx)       | `ext` | Adds structured logging and logstash support to `log`              |
+| [`netutil`](netutil) | `new` | Provides functions to get free TCP and UDP ports.                  |
+| [`server`](server)   | `new` | Adds types like `Runner` to run application servers                |
+| [`timex`](timex)     | `ext` | Extends `time` with other time functions and utilities             |
 
 ## Contributors
 
