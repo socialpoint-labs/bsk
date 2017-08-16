@@ -1,10 +1,10 @@
-# Package runner
+# Package contextx
 
 ## Description
 
-`package runner` provides abstractions needed to run tasks. The goal is to
-provide a common abstraction that will enable running and stopping tasks, and
-also to compose and decorate its executions.
+`package contextx` adds abstractions needed to run tasks that receive a
+`context.Context`. The goal is to provide a common abstraction that will enable
+running and stopping tasks, and also to compose and decorate its executions.
 
 ## Types
 

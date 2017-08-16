@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/runner"
+	"github.com/socialpoint-labs/bsk/contextx"
 )
 
 // RunInterval runs the provided function at intervals specified by the interval argument.
@@ -25,9 +25,9 @@ func RunInterval(ctx context.Context, interval time.Duration, f func()) {
 	}
 }
 
-// IntervalRunner returns a runner.Runner that runs the function RunInterval with the provided context
-func IntervalRunner(interval time.Duration, f func()) runner.Runner {
-	return runner.RunnerFunc(func(ctx context.Context) {
+// IntervalRunner returns a run.Runner that runs the function RunInterval with the provided context
+func IntervalRunner(interval time.Duration, f func()) contextx.Runner {
+	return contextx.RunnerFunc(func(ctx context.Context) {
 		RunInterval(ctx, interval, f)
 	})
 }
