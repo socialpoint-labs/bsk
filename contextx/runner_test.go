@@ -27,7 +27,7 @@ func TestARunnerRuns(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	contextx.Empty().Run(ctx)
+	contextx.EmptyRunner().Run(ctx)
 	// nothing to assert here really
 
 	wg := &sync.WaitGroup{}
@@ -41,7 +41,7 @@ func TestRunnerAdaptation(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.TODO()
 
-	contextx.EmptyAdapter().Adapt(contextx.Empty()).Run(ctx)
+	contextx.EmptyAdapter().Adapt(contextx.EmptyRunner()).Run(ctx)
 	// nothing to assert here really
 
 	wg := &sync.WaitGroup{}
@@ -60,7 +60,7 @@ func TestMultiRunnerAndMultiAdapter(t *testing.T) {
 
 	r := wgDoneRunner(ctx, wg)
 	adapter := wgAddAdapter(wg)
-	mr := contextx.Multi(
+	mr := contextx.MultiRunner(
 		adapter.Adapt(r),
 		contextx.MultiAdapter(
 			contextx.EmptyAdapter(),
