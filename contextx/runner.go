@@ -20,16 +20,16 @@ func (f RunnerFunc) Run(ctx context.Context) {
 	f(ctx)
 }
 
-// Empty is a Runner that does nothing for testing purposes only.
-func Empty() RunnerFunc {
+// EmptyRunner is a Runner that does nothing for testing purposes only.
+func EmptyRunner() RunnerFunc {
 	return func(context.Context) {
 		// don't do anything
 	}
 }
 
-// Multi receives multiple Runners and returns a new RunnerFunc that runs them
+// MultiRunner receives multiple Runners and returns a new RunnerFunc that runs them
 // in go-routines.
-func Multi(runners ...Runner) RunnerFunc {
+func MultiRunner(runners ...Runner) RunnerFunc {
 	return func(ctx context.Context) {
 		for _, runner := range runners {
 			go runner.Run(ctx)
