@@ -1,4 +1,4 @@
-package server
+package contextx_test
 
 import (
 	"context"
@@ -6,17 +6,18 @@ import (
 	"testing"
 	"time"
 
+	"github.com/socialpoint-labs/bsk/contextx"
 	"github.com/stretchr/testify/assert"
 )
 
-func wgAddAdapter(wg *sync.WaitGroup) AdapterFunc {
-	return func(runner Runner) Runner {
+func wgAddAdapter(wg *sync.WaitGroup) contextx.AdapterFunc {
+	return func(runner contextx.Runner) contextx.Runner {
 		wg.Add(1)
 		return runner
 	}
 }
 
-func wgDoneRunner(ctx context.Context, wg *sync.WaitGroup) RunnerFunc {
+func wgDoneRunner(ctx context.Context, wg *sync.WaitGroup) contextx.RunnerFunc {
 	return func(ctx context.Context) {
 		wg.Done()
 	}
@@ -26,7 +27,7 @@ func TestARunnerRuns(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	EmptyRunner().Run(ctx)
+	contextx.Empty().Run(ctx)
 	// nothing to assert here really
 
 	wg := &sync.WaitGroup{}
@@ -40,7 +41,7 @@ func TestRunnerAdaptation(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.TODO()
 
-	EmptyAdapter().Adapt(EmptyRunner()).Run(ctx)
+	contextx.EmptyAdapter().Adapt(contextx.Empty()).Run(ctx)
 	// nothing to assert here really
 
 	wg := &sync.WaitGroup{}
@@ -57,16 +58,15 @@ func TestMultiRunnerAndMultiAdapter(t *testing.T) {
 
 	wg := &sync.WaitGroup{}
 
-	runner := wgDoneRunner(ctx, wg)
+	r := wgDoneRunner(ctx, wg)
 	adapter := wgAddAdapter(wg)
-
-	mr := MultiRunner(
-		adapter.Adapt(runner),
-		MultiAdapter(
-			EmptyAdapter(),
-			EmptyAdapter(),
+	mr := contextx.Multi(
+		adapter.Adapt(r),
+		contextx.MultiAdapter(
+			contextx.EmptyAdapter(),
+			contextx.EmptyAdapter(),
 			adapter,
-		).Adapt(runner),
+		).Adapt(r),
 	)
 
 	mr.Run(ctx)
