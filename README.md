@@ -15,6 +15,7 @@ There are two types of packages:
 | [`logx`](logx)         | `ext` | Extends `log` with structured logging and logstash support                        |
 | [`contextx`](contextx) | `ext` | Extends `context` with types and decorators to run tasks with a `context.Context` |
 | [`timex`](timex)       | `ext` | Extends `time` with other time functions and utilities                            |
+| [`metrics`](metrics)   | `new` | Adds metrics to instrument and publish to e.g DataDog                             |
 
 ## Contributors
 
