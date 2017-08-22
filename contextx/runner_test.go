@@ -27,7 +27,7 @@ func TestARunnerRuns(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 
-	contextx.EmptyRunner().Run(ctx)
+	contextx.NopRunner().Run(ctx)
 	// nothing to assert here really
 
 	wg := &sync.WaitGroup{}
@@ -41,7 +41,7 @@ func TestRunnerAdaptation(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.TODO()
 
-	contextx.EmptyAdapter().Adapt(contextx.EmptyRunner()).Run(ctx)
+	noopAdapter().Adapt(contextx.NopRunner()).Run(ctx)
 	// nothing to assert here really
 
 	wg := &sync.WaitGroup{}
@@ -63,8 +63,8 @@ func TestMultiRunnerAndMultiAdapter(t *testing.T) {
 	mr := contextx.MultiRunner(
 		adapter.Adapt(r),
 		contextx.MultiAdapter(
-			contextx.EmptyAdapter(),
-			contextx.EmptyAdapter(),
+			noopAdapter(),
+			noopAdapter(),
 			adapter,
 		).Adapt(r),
 	)
@@ -87,4 +87,11 @@ func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 	case <-time.After(timeout):
 		return true // timed out
 	}
+}
+
+// noopyAdapter returns a no-op adapter that  return the same provided Runner.
+func noopAdapter() contextx.Adapter {
+	return contextx.AdapterFunc(func(runner contextx.Runner) contextx.Runner {
+		return runner
+	})
 }
