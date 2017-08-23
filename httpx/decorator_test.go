@@ -133,34 +133,6 @@ func TestCheckHeaderDecorator(t *testing.T) {
 	assert.Equal(string(content), "")
 }
 
-func TestCheckSPAuthHeaderDecorator(t *testing.T) {
-	assert := assert.New(t)
-
-	secret := "secret"
-
-	handler := httpx.CheckSPAuthHeaderDecorator(secret)(httpx.NoopHandler())
-
-	w := httptest.NewRecorder()
-	r := &http.Request{}
-
-	handler.ServeHTTP(w, r)
-	assert.Equal(w.Code, http.StatusUnauthorized)
-	_, err := ioutil.ReadAll(w.Body)
-	assert.NoError(err)
-
-	// put the secret header and should go ok
-	r, err = http.NewRequest("GET", "http://foo.bar", nil)
-	assert.NoError(err)
-	r.Header.Set("X-SP-Sign", secret)
-
-	w = httptest.NewRecorder()
-	handler.ServeHTTP(w, r)
-	assert.Equal(w.Code, http.StatusOK)
-	content, err := ioutil.ReadAll(w.Body)
-	assert.NoError(err)
-	assert.Equal(string(content), "")
-}
-
 func TestRootDecorator(t *testing.T) {
 	assert := assert.New(t)
 

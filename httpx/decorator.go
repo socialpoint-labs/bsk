@@ -92,12 +92,6 @@ func CheckHeaderDecorator(headerName, headerValue string, statusCode int) Decora
 	}
 }
 
-// CheckSPAuthHeaderDecorator checks for the sign header with the provided secret,
-// if doesn't match will return HTTP 401.
-func CheckSPAuthHeaderDecorator(secret string) Decorator {
-	return CheckHeaderDecorator("X-SP-Sign", secret, http.StatusUnauthorized)
-}
-
 // RootDecorator decorates a handler to distinguish root path from 404s
 // ServeMux matches "/" for both, root path and all unmatched URLs
 // How to bypass: https://golang.org/pkg/net/http/#example_ServeMux_Handle
