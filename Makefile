@@ -20,7 +20,7 @@ install-tools:
 	go get github.com/golang/lint/golint
 	go get github.com/kisielk/errcheck
 	go get honnef.co/go/tools/cmd/gosimple
-	go get github.com/mvdan/interfacer/cmd/interfacer
+	go get mvdan.cc/interfacer
 	go get honnef.co/go/tools/cmd/staticcheck
 
 lint:
