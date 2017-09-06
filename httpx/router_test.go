@@ -97,8 +97,10 @@ func TestRouterAdapterAdaptsOneOfMultipleHandlers(t *testing.T) {
 func TestRouterWithDecorators(t *testing.T) {
 	assert := assert.New(t)
 
+	header := "foo"
+	secret := "bar"
 	decorators := []Decorator{
-		CheckSPAuthHeaderDecorator("valid"),
+		CheckHeaderDecorator(header, secret, http.StatusUnauthorized),
 		EnableCORSDecorator(),
 	}
 
@@ -128,19 +130,19 @@ func TestRouterWithDecorators(t *testing.T) {
 		{"/_catalog", http.StatusUnauthorized, ""},
 		{"/admin/hello/foo", http.StatusUnauthorized, ""},
 		{"/admin/world", http.StatusUnauthorized, ""},
-		{"/_catalog", http.StatusUnauthorized, "invalid"},
-		{"/admin/hello/foo", http.StatusUnauthorized, "invalid"},
-		{"/admin/world", http.StatusUnauthorized, "invalid"},
-		{"/_catalog", http.StatusOK, "valid"},
-		{"/admin/hello/foo", http.StatusOK, "valid"},
-		{"/admin/world", http.StatusOK, "valid"},
+		{"/_catalog", http.StatusUnauthorized, "invalid_secret"},
+		{"/admin/hello/foo", http.StatusUnauthorized, "invalid_secret"},
+		{"/admin/world", http.StatusUnauthorized, "invalid_secret"},
+		{"/_catalog", http.StatusOK, secret},
+		{"/admin/hello/foo", http.StatusOK, secret},
+		{"/admin/world", http.StatusOK, secret},
 		{"/dashboard", http.StatusOK, ""},
 	} {
 		req, err := http.NewRequest("GET", testcase.uri, nil)
 		recorder := httptest.NewRecorder()
 
 		if testcase.secret != "" {
-			req.Header.Add("X-SP-Sign", testcase.secret)
+			req.Header.Add(header, testcase.secret)
 		}
 
 		router.ServeHTTP(recorder, req)
