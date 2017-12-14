@@ -37,7 +37,7 @@ Special thanks to all the people who has been collaborating (in alphabetical ord
 - [Javier Expósito](https://github.com/javierExposito)
 - [Jordi Forns](https://github.com/jforns)
 - [Julio de la Calle](https://github.com/dixso)
-- [Ludovic Livain](https://github.com/sp-ludovic-ivain)
+- [Ludovic Ivain](https://github.com/sp-ludovic-ivain)
 - [Manuel Jurado](https://github.com/manuelljb)
 - [Manuel Peralta](https://github.com/---)
 - [Roger Clotet](https://github.com/rogerclotet)
