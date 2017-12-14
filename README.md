@@ -9,13 +9,14 @@ There are two types of packages:
   Usually named after a stdlib package name plus `x`.
 - `new`: they provide logic not present in the stdlib.
 
-| Package                | Type  | Description                                                                       |
-| ---                    | ----  | -----------                                                                       |
-| [`httpx`](httpx)       | `ext` | Extends `net/http` with routing utilities, decorators, etc                        |
-| [`logx`](logx)         | `ext` | Extends `log` with structured logging and logstash support                        |
-| [`contextx`](contextx) | `ext` | Extends `context` with types and decorators to run tasks with a `context.Context` |
-| [`timex`](timex)       | `ext` | Extends `time` with other time functions and utilities                            |
-| [`metrics`](metrics)   | `new` | Adds metrics to instrument and publish to e.g DataDog                             |
+| Package                    | Type  | Description                                                                       |
+| ---                        | ----  | -----------                                                                       |
+| [`httpx`](httpx)           | `ext` | Extends `net/http` with routing utilities, decorators, etc                        |
+| [`logx`](logx)             | `ext` | Extends `log` with structured logging and logstash support                        |
+| [`contextx`](contextx)     | `ext` | Extends `context` with types and decorators to run tasks with a `context.Context` |
+| [`timex`](timex)           | `ext` | Extends `time` with other time functions and utilities                            |
+| [`metrics`](metrics)       | `new` | Adds metrics to instrument and publish to e.g DataDog                             |
+| [`dispatcher`](dispatcher) | `new` | Adds a reflect-based framework for dispatching events.                            |
 
 ## Contributors
 
