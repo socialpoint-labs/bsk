@@ -1,10 +1,9 @@
 package metrics
 
 import (
+	"context"
 	"runtime"
 	"time"
-
-	"context"
 
 	"github.com/socialpoint-labs/bsk/contextx"
 )
@@ -41,7 +40,7 @@ type goMetrics struct {
 
 // Run captures new values from the Go VM and publishes them to the metrics.
 // Be careful (but much less so) with this because debug.ReadGCStats calls
-// the C function runtimeÃÂ·lock(runtimeÃÂ·mheap) which, while not a stop-the-world
+// the C function runtime·lock(runtime·mheap) which, while not a stop-the-world
 // operation, isn't something you want to be doing all the time.
 func (r *GoStatsRunner) Run(ctx context.Context) {
 	goMetrics := &goMetrics{
