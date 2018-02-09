@@ -43,7 +43,7 @@ func ExampleEvent() {
 	// Output:
 }
 
-func ExampleStatsDBackend() {
+func Example_statsDBackend() {
 	// because UDP is fire and forget this always work. If you create
 	// and UDP server and then close it it will fail as expected.
 	addr, err := net.ResolveUDPAddr("udp", "localhost:1234")
@@ -75,9 +75,9 @@ func ExampleStatsDBackend() {
 }
 
 func ExampleErrorHandler() {
-	errors := make(chan error)
+	errs := make(chan error)
 
-	handler := func(err error) { errors <- err }
+	handler := func(err error) { errs <- err }
 
 	publisher := metrics.NewPublisher(&FailingWriter{}, metrics.StatsDEncoder, metrics.FlushEvery5s, handler)
 	go publisher.Run(context.Background())
@@ -86,7 +86,7 @@ func ExampleErrorHandler() {
 	gauge.Update(20)
 
 	publisher.Flush()
-	fmt.Println(<-errors)
+	fmt.Println(<-errs)
 
 	// Output: error: don't care; I always fail
 }
@@ -105,7 +105,7 @@ func ExampleWithNamespace() {
 	// Output:
 }
 
-func ExampleWithGoStats() {
+func Example_withGoStats() {
 	discardAllMetrics := metrics.NewDiscardAll()
 	ctx := context.Background()
 	go discardAllMetrics.Run(ctx)
