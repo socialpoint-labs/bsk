@@ -95,6 +95,11 @@ func (p *Publisher) Timer(name string, tags ...Tag) Timer {
 	return &timerEvent{publisherMetric: publisherMetric{name: name, tags: tags, nf: p.notify}}
 }
 
+// Histogram returns a new Histogram with the provided name and tags
+func (p *Publisher) Histogram(name string, tags ...Tag) Histogram {
+	return &publisherHistogram{publisherMetric{name: name, tags: tags, nf: p.notify}}
+}
+
 // Flush forces the flush of the publisher
 func (p *Publisher) Flush() {
 	p.forceFlush <- struct{}{}
@@ -257,4 +262,24 @@ func (e *timerEvent) WithTags(tags ...Tag) Timer {
 func (e *timerEvent) WithTag(key string, value interface{}) Timer {
 	e.tags = append(e.tags, NewTag(key, value))
 	return e
+}
+
+type publisherHistogram struct {
+	publisherMetric
+}
+
+func (h *publisherHistogram) AddValue(value uint64) {
+	h.nf(OpHistogramUpdate, h.name, value, h.tags)
+}
+
+func (h *publisherHistogram) WithTags(tags ...Tag) Histogram {
+	for _, tag := range tags {
+		h.tags = append(h.tags, tag)
+	}
+	return h
+}
+
+func (h *publisherHistogram) WithTag(key string, value interface{}) Histogram {
+	h.tags = append(h.tags, NewTag(key, value))
+	return h
 }

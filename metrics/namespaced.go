@@ -30,6 +30,10 @@ func (n *namespaced) Timer(name string, tags ...Tag) Timer {
 	return n.adapted.Timer(n.prefix(name), tags...)
 }
 
+func (n *namespaced) Histogram(name string, tags ...Tag) Histogram {
+	return n.adapted.Histogram(n.prefix(name), tags...)
+}
+
 func (n *namespaced) prefix(name string) string {
 	return fmt.Sprintf("%s%s%s", n.namespace, namespaceSeparator, name)
 }

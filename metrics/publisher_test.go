@@ -124,6 +124,36 @@ func TestTimerEvent(t *testing.T) {
 	a.Contains(line, "|ms|@1.0000|#\n")
 }
 
+func TestPublisherHistogram(t *testing.T) {
+	a := assert.New(t)
+
+	addr := netutil.FreeUDPAddr()
+
+	server, err := net.ListenUDP("udp", addr)
+	a.NoError(err)
+
+	client, err := net.DialUDP("udp", nil, addr)
+	a.NoError(err)
+
+	publisher := metrics.NewPublisher(client, metrics.StatsDEncoder, time.Millisecond, nil)
+	go publisher.Run(context.Background())
+
+	histo := publisher.Histogram("test")
+
+	histo.AddValue(42)
+	histo.AddValue(666)
+
+	reader := bufio.NewReader(server)
+
+	line, err := reader.ReadString('\n')
+	a.NoError(err)
+	a.Equal("test:42|h|@1.0000|#\n", line)
+
+	line, err = reader.ReadString('\n')
+	a.NoError(err)
+	a.Equal("test:666|h|@1.0000|#\n", line)
+}
+
 type recorder chan string
 
 func (r recorder) Write(b []byte) (n int, err error) {

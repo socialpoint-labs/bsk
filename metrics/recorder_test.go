@@ -121,6 +121,20 @@ func TestMetricsRecorder(t *testing.T) {
 		a.Equal(t.Tags(), append(tags, moreTags...))
 		t.WithTag(lastTagKey, lastTagValue) // and another way to add one tag
 		a.Equal(t.Tags(), append(append(tags, moreTags...), lastTag))
+
+		// test Histogram
+		metricName = "histogram"
+		h := r.Histogram(metricName, tags...).(*metrics.RecorderHistogram)
+		h.AddValue(42)
+		h.AddValue(666)
+		a.Equal([]uint64{42, 666}, h.Values)
+
+		// test histogram tags
+		a.Equal(h.Tags(), tags)
+		h.WithTags(moreTags...) // another way to set tags
+		a.Equal(h.Tags(), append(tags, moreTags...))
+		h.WithTag(lastTagKey, lastTagValue) // and another way to add one tag
+		a.Equal(h.Tags(), append(append(tags, moreTags...), lastTag))
 	}
 }
 
@@ -135,6 +149,7 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 	r.Gauge("gauge")
 	r.Timer("timer")
 	r.Event("event")
+	r.Histogram("histogram")
 
 	thread := func() {
 		c := r.Get("counter").(*metrics.RecorderCounter)
@@ -150,12 +165,17 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 		e := r.Get("event").(*metrics.RecorderEvent)
 		e.SendWithText("life")
 
+		h := r.Get("histogram").(*metrics.RecorderHistogram)
+		h.AddValue(42)
+		h.AddValue(666)
+
 		ch <- true
 	}
 
 	c := r.Get("counter").(*metrics.RecorderCounter)
 	g := r.Get("gauge").(*metrics.RecorderGauge)
 	timer := r.Get("timer").(*metrics.RecorderTimer)
+	h := r.Get("histogram").(*metrics.RecorderHistogram)
 
 	go thread()
 	go thread()
@@ -166,4 +186,5 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 	a.EqualValues(2, c.Value)
 	a.EqualValues(123, g.Value)
 	a.WithinDuration(timer.StartedTime, timer.StoppedTime, time.Duration(time.Millisecond))
+	a.Equal([]uint64{42, 666, 42, 666}, h.Values)
 }

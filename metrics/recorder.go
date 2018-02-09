@@ -194,6 +194,45 @@ func (t *RecorderTimer) WithTag(key string, value interface{}) Timer {
 	return t
 }
 
+// RecorderHistogram is a RecorderMetrics that implements Histogram
+type RecorderHistogram struct {
+	RecorderMetric
+	Values []uint64
+	mu     sync.Mutex // protects the whole struct
+}
+
+// Vals returns the histogram values in a thread-safe manner
+func (h *RecorderHistogram) Vals() []uint64 {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	return h.Values
+}
+
+// AddValue add the given value to the histogram
+func (h *RecorderHistogram) AddValue(value uint64) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	h.Values = append(h.Values, value)
+}
+
+// WithTags adds the passed tags to the Tags recorder map.
+func (h *RecorderHistogram) WithTags(tags ...Tag) Histogram {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.tags = append(h.tags, tags...)
+	return h
+}
+
+// WithTag creates a new tag with the parameters and adds it to the Tags recorder map.
+func (h *RecorderHistogram) WithTag(key string, value interface{}) Histogram {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.tags = append(h.tags, NewTag(key, value))
+	return h
+}
+
 // Counter implements the Metrics behaviour to return a new Counter.
 func (r *Recorder) Counter(name string, tags ...Tag) Counter {
 	m := r.Get(name)
@@ -222,6 +261,13 @@ func (r *Recorder) Event(name string, tags ...Tag) Event {
 // Timer implements the Metrics behaviour to return a new Timer.
 func (r *Recorder) Timer(name string, tags ...Tag) Timer {
 	m := &RecorderTimer{RecorderMetric: RecorderMetric{name, tags}}
+	r.register(name, m)
+	return m
+}
+
+// Histogram implements the Metrics behaviour to return a new Histogram
+func (r *Recorder) Histogram(name string, tags ...Tag) Histogram {
+	m := &RecorderHistogram{RecorderMetric: RecorderMetric{name, tags}}
 	r.register(name, m)
 	return m
 }

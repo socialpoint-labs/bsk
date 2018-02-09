@@ -62,6 +62,9 @@ type Metrics interface {
 
 	// Provide a timer with the given name and tags
 	Timer(name string, tags ...Tag) Timer
+
+	// Provide a histogram with the given name and tags
+	Histogram(name string, tags ...Tag) Histogram
 }
 
 // Metric is the interface for the common methods that all the metrics have.
@@ -106,6 +109,15 @@ type Timer interface {
 	Stop()
 	WithTags(tags ...Tag) Timer
 	WithTag(key string, value interface{}) Timer
+}
+
+// Histogram hold series of unsigned 64-bit integer values that enable obtaining
+// their statistical distribution
+type Histogram interface {
+	Metric
+	AddValue(value uint64)
+	WithTags(tags ...Tag) Histogram
+	WithTag(key string, value interface{}) Histogram
 }
 
 // WithNamespace composes Metrics so when creating types of metrics will
