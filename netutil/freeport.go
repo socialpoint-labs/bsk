@@ -22,7 +22,7 @@ func FreeTCPAddr() *net.TCPAddr {
 	return l.Addr().(*net.TCPAddr)
 }
 
-// FreeUDPAddr returns an available TCP port
+// FreeUDPAddr returns an available UDP port
 func FreeUDPAddr() *net.UDPAddr {
 	addr, err := net.ResolveUDPAddr("udp", "localhost:0")
 	if err != nil {
