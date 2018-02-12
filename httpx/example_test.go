@@ -8,7 +8,7 @@ import (
 	"github.com/socialpoint-labs/bsk/httpx"
 )
 
-func Example_Router_Multi_Route_Endpoint_With_Prefix() {
+func Example_routerMultiRouteEndpointWithPrefix() {
 	writer := func() http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(r.URL.String())
