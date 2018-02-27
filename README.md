@@ -17,6 +17,7 @@ There are two types of packages:
 | [`timex`](timex)           | `ext` | Extends `time` with other time functions and utilities                            |
 | [`metrics`](metrics)       | `new` | Adds metrics to instrument and publish to e.g DataDog                             |
 | [`dispatcher`](dispatcher) | `new` | Adds a reflect-based framework for dispatching events.                            |
+| [`netutil`](netutil)       | `new` | Provides functions to get free TCP and UDP ports.                                 |
 
 ## Contributors
 

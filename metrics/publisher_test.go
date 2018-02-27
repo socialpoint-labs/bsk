@@ -10,6 +10,7 @@ import (
 	"net"
 
 	"github.com/socialpoint-labs/bsk/metrics"
+	"github.com/socialpoint-labs/bsk/netutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,7 +78,7 @@ func TestPublisherFlushBufferWhenMaxSizeIsExceeded(t *testing.T) {
 func TestPublisherFlushMetricsToRealUDPServer(t *testing.T) {
 	assert := assert.New(t)
 
-	addr := freeUDPAddr()
+	addr := netutil.FreeUDPAddr()
 
 	server, err := net.ListenUDP("udp", addr)
 	assert.NoError(err)
@@ -102,7 +103,7 @@ func TestPublisherFlushMetricsToRealUDPServer(t *testing.T) {
 func TestTimerEvent(t *testing.T) {
 	assert := assert.New(t)
 
-	addr := freeUDPAddr()
+	addr := netutil.FreeUDPAddr()
 
 	server, err := net.ListenUDP("udp", addr)
 	assert.NoError(err)
@@ -132,21 +133,4 @@ type recorder chan string
 func (r recorder) Write(b []byte) (n int, err error) {
 	r <- string(b)
 	return len(b), nil
-}
-
-func freeUDPAddr() *net.UDPAddr {
-	addr, err := net.ResolveUDPAddr("udp", "localhost:0")
-	if err != nil {
-		panic(err)
-	}
-
-	l, err := net.ListenUDP("udp", addr)
-	if err != nil {
-		panic(err)
-	}
-	if err := l.Close(); err != nil {
-		panic(err)
-	}
-
-	return l.LocalAddr().(*net.UDPAddr)
 }
