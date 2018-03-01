@@ -12,13 +12,17 @@ import (
 )
 
 func TestGoStats(t *testing.T) {
-	assert := assert.New(t)
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	a := assert.New(t)
 	numGoMetrics := reflect.TypeOf(metrics.GoMetrics{}).NumField()
 	rec := make(recorder, numGoMetrics)
 
 	duration := time.Millisecond * 100
 	publisher := metrics.NewPublisher(rec, metrics.StatsDEncoder, duration*2, nil)
-	ctx := context.Background()
 	go publisher.Run(ctx)
 
 	runner := metrics.NewGoStatsRunner(publisher, duration, metrics.Tag{Key: "test", Value: "life"})
@@ -33,7 +37,7 @@ loop:
 		case encodedFlushedMetrics = <-rec:
 			break loop
 		case <-timeout:
-			assert.Fail("timeout reached and the publisher didn't flush out the metrics")
+			a.Fail("timeout reached and the publisher didn't flush out the metrics")
 			return
 		}
 	}
@@ -42,10 +46,10 @@ loop:
 	// remove last empty element due to how Split works
 	flushedMetrics = flushedMetrics[:len(flushedMetrics)-1]
 	// -1 because go.gc.pause depends on GC usage and its not deterministic
-	assert.True(len(flushedMetrics) >= numGoMetrics-1)
+	a.True(len(flushedMetrics) >= numGoMetrics-1)
 
 	for _, flushedMetric := range flushedMetrics {
-		assert.Contains(flushedMetric, "go.")
-		assert.Contains(flushedMetric, "#test:life,vm:go")
+		a.Contains(flushedMetric, "go.")
+		a.Contains(flushedMetric, "#test:life,vm:go")
 	}
 }
