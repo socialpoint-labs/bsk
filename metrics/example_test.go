@@ -1,11 +1,10 @@
 package metrics_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
-
-	"context"
 
 	"github.com/socialpoint-labs/bsk/metrics"
 )
@@ -39,6 +38,17 @@ func ExampleEvent() {
 	event := discardAllMetrics.Event("event title")
 	event.Send()
 	event.SendWithText("event text")
+
+	// Output:
+}
+
+func ExampleTimer() {
+	discardAllMetrics := metrics.NewDiscardAll()
+	go discardAllMetrics.Run(context.Background())
+
+	timer := discardAllMetrics.Timer("test.timer")
+	timer.Start()
+	timer.Stop()
 
 	// Output:
 }

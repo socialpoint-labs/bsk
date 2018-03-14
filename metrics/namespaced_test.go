@@ -1,13 +1,12 @@
 package metrics_test
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
-
-	"context"
 
 	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/stretchr/testify/assert"

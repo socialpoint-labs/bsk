@@ -35,9 +35,11 @@ func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
 		panic("invalid metrics publisher type")
 	}
 
-	// init metrics
 	var serviceTag Tag
 	var m Metrics
+	var r contextx.Runner
+
+	// init metrics
 	if namespace != "" {
 		m = WithNamespace(publisher, namespace)
 		serviceTag = NewTag("namespace", namespace)
@@ -46,7 +48,6 @@ func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
 	}
 
 	// init runner
-	var r contextx.Runner
 	if params.Get("gostats") == "false" {
 		r = publisher
 	} else {
@@ -54,6 +55,7 @@ func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
 			publisher,
 			NewGoStatsRunner(publisher, FlushEvery15s, serviceTag),
 		)
+
 	}
 
 	return m, r

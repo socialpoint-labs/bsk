@@ -1,10 +1,9 @@
 package metrics_test
 
 import (
+	"context"
 	"testing"
 	"time"
-
-	"context"
 
 	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/stretchr/testify/assert"

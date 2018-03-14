@@ -2,14 +2,13 @@ package metrics
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
 	"time"
-
-	"context"
 )
 
 const (
@@ -91,9 +90,9 @@ func (p *Publisher) Event(title string, tags ...Tag) Event {
 	return &publisherEvent{publisherMetric{name: title, tags: tags, nf: p.notify}}
 }
 
-// Timer returns a new Timer with the provided title and tags
-func (p *Publisher) Timer(title string, tags ...Tag) Timer {
-	return &timerEvent{publisherMetric: publisherMetric{name: title, tags: tags, nf: p.notify}}
+// Timer returns a new Timer with the provided name and tags
+func (p *Publisher) Timer(name string, tags ...Tag) Timer {
+	return &timerEvent{publisherMetric: publisherMetric{name: name, tags: tags, nf: p.notify}}
 }
 
 // Flush forces the flush of the publisher

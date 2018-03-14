@@ -1,13 +1,11 @@
 package metrics_test
 
 import (
+	"bufio"
+	"context"
+	"net"
 	"testing"
 	"time"
-
-	"context"
-
-	"bufio"
-	"net"
 
 	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/socialpoint-labs/bsk/netutil"
@@ -15,42 +13,40 @@ import (
 )
 
 func TestPublisherImplementsMetrics(t *testing.T) {
-	assert := assert.New(t)
-	assert.Implements((*metrics.Metrics)(nil), &metrics.Publisher{})
+	check := func(m metrics.Metrics) {}
+	check(&metrics.Publisher{})
 }
 
-var tags = []metrics.Tag{metrics.NewTag("host", "life"), metrics.NewTag("project", "bsk")}
-
 func TestPublisherForwardMetrics(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 	rec := make(recorder)
 
 	publisher := metrics.NewPublisher(rec, metrics.StatsDEncoder, metrics.FlushEvery3s, nil)
 	go publisher.Run(context.Background())
 
-	counter := publisher.Counter("commands_executed", tags...)
+	counter := publisher.Counter("commands_executed", metrics.Tag{Key: "host", Value: "life"}, metrics.Tag{Key: "project", Value: "bsk"})
 	counter.Add(1)
 	counter.WithTags(metrics.NewTag("cfoo", "cbar")).Inc()
 
-	gauge := publisher.Gauge("memory", tags...)
+	gauge := publisher.Gauge("memory", metrics.Tag{Key: "host", Value: "life"}, metrics.Tag{Key: "project", Value: "bsk"})
 	gauge.WithTags(metrics.NewTag("gfoo", "gbar")).Update(100)
 
 	publisher.Flush()
 
 	expected := "commands_executed:1|c|@1.0000|#host:life,project:bsk\ncommands_executed:1|c|@1.0000|#host:life,project:bsk,cfoo:cbar\nmemory:100|g|@1.0000|#host:life,project:bsk,gfoo:gbar\n"
 
-	assert.Equal(expected, <-rec)
+	a.Equal(expected, <-rec)
 }
 
 func TestPublisherFlushBufferWhenMaxSizeIsExceeded(t *testing.T) {
 	rec := make(recorder, 1024)
-	assert := assert.New(t)
+	a := assert.New(t)
 	timeout := time.After(time.Second * 3)
 
 	// Create a publisher that takes a long time to flush
 	publisher := metrics.NewPublisher(rec, metrics.StatsDEncoder, time.Hour, nil)
 	go publisher.Run(context.Background())
-	counter := publisher.Counter("commands_executed", tags...)
+	counter := publisher.Counter("commands_executed", metrics.Tag{Key: "host", Value: "life"}, metrics.Tag{Key: "project", Value: "bsk"})
 
 	// Increment the counter infinitely.
 	go func() {
@@ -69,22 +65,22 @@ func TestPublisherFlushBufferWhenMaxSizeIsExceeded(t *testing.T) {
 		return
 	case <-timeout:
 		// We reached the timeout and no flush occurred, bad news!
-		assert.Fail("timeout reached and the publisher did't flush out the metrics")
+		a.Fail("timeout reached and the publisher did't flush out the metrics")
 		return
 	default:
 	}
 }
 
 func TestPublisherFlushMetricsToRealUDPServer(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	addr := netutil.FreeUDPAddr()
 
 	server, err := net.ListenUDP("udp", addr)
-	assert.NoError(err)
+	a.NoError(err)
 
 	client, err := net.DialUDP("udp", nil, addr)
-	assert.NoError(err)
+	a.NoError(err)
 
 	publisher := metrics.NewPublisher(client, metrics.StatsDEncoder, time.Millisecond, nil)
 	go publisher.Run(context.Background())
@@ -96,20 +92,20 @@ func TestPublisherFlushMetricsToRealUDPServer(t *testing.T) {
 
 	line, err := reader.ReadString('\n')
 
-	assert.NoError(err)
-	assert.Equal("test:123|c|@1.0000|#\n", line)
+	a.NoError(err)
+	a.Equal("test:123|c|@1.0000|#\n", line)
 }
 
 func TestTimerEvent(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	addr := netutil.FreeUDPAddr()
 
 	server, err := net.ListenUDP("udp", addr)
-	assert.NoError(err)
+	a.NoError(err)
 
 	client, err := net.DialUDP("udp", nil, addr)
-	assert.NoError(err)
+	a.NoError(err)
 
 	publisher := metrics.NewPublisher(client, metrics.StatsDEncoder, time.Millisecond, nil)
 	go publisher.Run(context.Background())
@@ -123,9 +119,9 @@ func TestTimerEvent(t *testing.T) {
 
 	line, err := reader.ReadString('\n')
 
-	assert.NoError(err)
-	assert.Contains(line, "test:")
-	assert.Contains(line, "|ms|@1.0000|#\n")
+	a.NoError(err)
+	a.Contains(line, "test:")
+	a.Contains(line, "|ms|@1.0000|#\n")
 }
 
 type recorder chan string
