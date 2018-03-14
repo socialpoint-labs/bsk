@@ -53,6 +53,16 @@ func ExampleTimer() {
 	// Output:
 }
 
+func ExampleHistogram() {
+	discardAllMetrics := metrics.NewDiscardAll()
+	go discardAllMetrics.Run(context.Background())
+
+	histogram := discardAllMetrics.Histogram("test.histogram")
+	histogram.AddValue(42)
+	histogram.AddValue(666)
+	// Output:
+}
+
 func Example_statsDBackend() {
 	// because UDP is fire and forget this always work. If you create
 	// and UDP server and then close it it will fail as expected.
