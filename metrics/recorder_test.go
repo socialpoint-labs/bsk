@@ -2,6 +2,7 @@ package metrics_test
 
 import (
 	"math"
+	"sort"
 	"testing"
 	"time"
 
@@ -180,11 +181,22 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 	go thread()
 	go thread()
 
-	<-ch
-	<-ch
+	for finishedThreads := 0; finishedThreads < 2; {
+		select {
+		case <-time.After(time.Second):
+			t.Error("timeout checking recorded metrics")
+			return
+		case <-ch:
+			finishedThreads++
+		}
+	}
 
 	a.EqualValues(2, c.Value)
 	a.EqualValues(123, g.Value)
 	a.WithinDuration(timer.StartedTime, timer.StoppedTime, time.Duration(time.Millisecond))
-	a.Equal([]uint64{42, 666, 42, 666}, h.Values)
+	values := h.Values
+	sort.Slice(values, func(i, j int) bool {
+		return values[i] < values[j]
+	})
+	a.Equal([]uint64{42, 42, 666, 666}, h.Values)
 }
