@@ -1,3 +1,4 @@
+SOURCES=$(shell find . -name "*.go" | grep -v vendor/)
 PACKAGES=$(shell go list ./...)
 
 deps:
@@ -24,14 +25,14 @@ install-tools:
 	go get honnef.co/go/tools/cmd/staticcheck
 
 lint:
-	fgt go fmt ./...
-	fgt goimports -w .
-	fgt golint ./...
-	fgt go vet ./...
-	fgt gosimple ./...
-	fgt interfacer ./...
+	fgt go fmt $(PACKAGES)
+	fgt goimports -w $(SOURCES)
+	fgt golint $(PACKAGES)
+	fgt go vet $(PACKAGES)
+	fgt gosimple $(PACKAGES)
+	fgt interfacer $(PACKAGES)
 	# ignore deferred calls to io.Closer
-	fgt errcheck -ignore Close ./...
-	staticcheck ./...
+	fgt errcheck -ignore Close $(PACKAGES)
+	staticcheck $(PACKAGES)
 
 ci-check: lint test-ci
