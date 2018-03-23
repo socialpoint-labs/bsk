@@ -1,9 +1,9 @@
 language: go
 
 go:
-    - 1.8
-    - 1.9
-    - tip
+    - '1.9'
+    - '1.10'
+    - 'tip'
 
 install:
     - make install-tools
