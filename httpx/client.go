@@ -6,9 +6,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/socialpoint-labs/bsk/metrics"
 )
+
+const requestMetricName = "httpx.request_duration"
 
 // A Client sends http.Requests and returns http.Responses or errors in
 // case of failure.
@@ -61,6 +66,28 @@ func FaultTolerance(attempts int, backoff time.Duration) ClientDecorator {
 				time.Sleep(backoff * time.Duration(i))
 			}
 			return res, err
+		})
+	}
+}
+
+// InstrumentRequestDurationMetric returns an adapter that instruments metrics about the request duration
+func InstrumentRequestDurationMetric(m metrics.Metrics, t ...metrics.Tag) ClientDecorator {
+	return func(c Client) Client {
+		return ClientFunc(func(r *http.Request) (*http.Response, error) {
+			timer := m.Timer(requestMetricName).
+				WithTags(t...).
+				WithTag("method", strings.ToLower(r.Method))
+
+			timer.Start()
+
+			response, err := c.Do(r)
+			if response != nil {
+				timer = timer.WithTag("code", response.StatusCode)
+			}
+
+			timer.Stop()
+
+			return response, err
 		})
 	}
 }

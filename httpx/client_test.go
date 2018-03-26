@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/socialpoint-labs/bsk/httpx"
+	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -43,6 +44,41 @@ func (c *FailingClient) Do(*http.Request) (*http.Response, error) {
 	}, nil
 }
 
+type MetricsInstrument struct {
+	metrics.Metrics
+	timerMock metrics.Timer
+}
+
+func (mi *MetricsInstrument) Timer(name string, tags ...metrics.Tag) metrics.Timer {
+	return mi.timerMock
+}
+
+type TimerMock struct {
+	metrics.Timer
+	TagsMap map[string]interface{}
+	Started bool
+	Stopped bool
+}
+
+func (tm *TimerMock) WithTags(tags ...metrics.Tag) metrics.Timer {
+	for _, t := range tags {
+		tm.TagsMap[t.Key] = t.Value
+	}
+	return tm
+}
+
+func (tm *TimerMock) WithTag(key string, value interface{}) metrics.Timer {
+	tm.TagsMap[key] = value
+	return tm
+}
+
+func (tm *TimerMock) Start() {
+	tm.Started = true
+}
+func (tm *TimerMock) Stop() {
+	tm.Stopped = true
+}
+
 func TestHeaderDecorator(t *testing.T) {
 	assert := assert.New(t)
 
@@ -68,6 +104,29 @@ func TestFaultTolerance(t *testing.T) {
 
 	resp, err := client.Do(req)
 	assert.NoError(err)
+
+	assert.Equal(200, resp.StatusCode)
+}
+
+func TestInstrumentRequestDurationMetric(t *testing.T) {
+	assert := assert.New(t)
+
+	timer := &TimerMock{TagsMap: make(map[string]interface{})}
+	metricsInstrument := &MetricsInstrument{timerMock: timer}
+	customTag := metrics.Tag{Key: "tag", Value: "test"}
+	client := httpx.DecorateClient(&NoopClient{}, httpx.InstrumentRequestDurationMetric(metricsInstrument, customTag))
+
+	req, err := http.NewRequest("GET", "http://example.com", nil)
+	assert.NoError(err)
+
+	resp, err := client.Do(req)
+	assert.NoError(err)
+
+	assert.Equal(http.StatusOK, timer.TagsMap["code"])
+	assert.Equal("get", timer.TagsMap["method"])
+	assert.Equal("test", timer.TagsMap["tag"])
+	assert.True(timer.Started)
+	assert.True(timer.Stopped)
 
 	assert.Equal(200, resp.StatusCode)
 }
