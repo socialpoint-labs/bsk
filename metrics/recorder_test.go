@@ -181,9 +181,10 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 	go thread()
 	go thread()
 
+	after := time.After(time.Second)
 	for finishedThreads := 0; finishedThreads < 2; {
 		select {
-		case <-time.After(time.Second):
+		case <-after:
 			t.Error("timeout checking recorded metrics")
 			return
 		case <-ch:
