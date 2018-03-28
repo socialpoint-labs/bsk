@@ -31,6 +31,23 @@ func MultiRunner(runners ...Runner) Runner {
 	})
 }
 
+// MultiRunnerWithRunnerInstances creates a MultiRunner holding `num` instances of the given `runner`,
+// each running in its own goroutine.
+//
+// Be aware that the private state of the runner will not be shared between instances, i.e. each instance
+// will have its own view of the private state.
+//
+// If instances need to share state it'll have to live outside the runner implementation and the access
+// will have to be synchronized accordingly.
+func MultiRunnerWithRunnerInstances(runner Runner, num int) Runner {
+	instances := make([]Runner, num)
+	for i := 0; i < num; i++ {
+		instances[i] = runner
+	}
+
+	return MultiRunner(instances...)
+}
+
 // An Adapter adds certain functionality to a Runner.
 // Note: should be passed by value to enforce immutability, which have some
 // nice properties like safety in concurrent programming.
