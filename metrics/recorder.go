@@ -39,7 +39,7 @@ func (rm RecorderMetric) Tags() Tags {
 // A RecorderCounter is a RecorderMetric that implements Counter.
 type RecorderCounter struct {
 	RecorderMetric
-	Value uint64
+	value uint64
 	mu    sync.Mutex // protects the whole struct
 }
 
@@ -47,8 +47,7 @@ type RecorderCounter struct {
 func (c *RecorderCounter) Val() uint64 {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
-	return c.Value
+	return c.value
 }
 
 // Inc implements the Counter behaviour and stores the value in the Recorder.
@@ -60,7 +59,7 @@ func (c *RecorderCounter) Inc() {
 func (c *RecorderCounter) Add(delta uint64) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.Value += delta
+	c.value += delta
 }
 
 // WithTags adds the passed tags to the Tags recorder map.
@@ -82,15 +81,22 @@ func (c *RecorderCounter) WithTag(key string, value interface{}) Counter {
 // A RecorderGauge is a RecorderMetric that implements Gauge.
 type RecorderGauge struct {
 	RecorderMetric
-	Value interface{}
+	value interface{}
 	mu    sync.Mutex // protects the whole struct
+}
+
+// Val returns the counter value in a thread-safe manner
+func (g *RecorderGauge) Val() interface{} {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.value
 }
 
 // Update implements the Gauge behaviour and stores the value in the Recorder.
 func (g *RecorderGauge) Update(value interface{}) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	g.Value = value
+	g.value = value
 }
 
 // WithTags adds the passed tags to the Tags recorder map.
@@ -114,16 +120,22 @@ func (g *RecorderGauge) WithTag(key string, value interface{}) Gauge {
 // A RecorderEvent is a RecorderMetric that implements Event.
 type RecorderEvent struct {
 	RecorderMetric
-	Event string
+	event string
+	mu    sync.Mutex // protects the whole struct
+}
 
-	mu sync.Mutex // protects the whole struct
+// Event returns the event name in a thread-safe manner
+func (e *RecorderEvent) Event() string {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.event
 }
 
 // Send implements the Event behaviour.
 func (e *RecorderEvent) Send() {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	e.Event = e.name + "|"
+	e.event = e.name + "|"
 }
 
 // SendWithText implements the Event behaviour and stores the
@@ -131,7 +143,7 @@ func (e *RecorderEvent) Send() {
 func (e *RecorderEvent) SendWithText(text string) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	e.Event = e.name + "|" + text
+	e.event = e.name + "|" + text
 }
 
 // WithTags adds the passed tags to the Tags recorder map.
@@ -153,9 +165,23 @@ func (e *RecorderEvent) WithTag(key string, value interface{}) Event {
 // A RecorderTimer is a RecorderMetric that implements Timer.
 type RecorderTimer struct {
 	RecorderMetric
-	StartedTime time.Time
-	StoppedTime time.Time
+	startedTime time.Time
+	stoppedTime time.Time
 	mu          sync.Mutex // protects the whole struct
+}
+
+// StartedTime returns the time the timer was started in a thread-safe manner
+func (t *RecorderTimer) StartedTime() time.Time {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.startedTime
+}
+
+// StoppedTime returns the time the timer was stopped in a thread-safe manner
+func (t *RecorderTimer) StoppedTime() time.Time {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.stoppedTime
 }
 
 // Start the timer.
@@ -163,7 +189,7 @@ func (t *RecorderTimer) Start() {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	t.StartedTime = time.Now()
+	t.startedTime = time.Now()
 }
 
 // Stop the timer.
@@ -171,7 +197,7 @@ func (t *RecorderTimer) Stop() {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	t.StoppedTime = time.Now()
+	t.stoppedTime = time.Now()
 }
 
 // WithTags adds the passed tags to the Tags recorder map.
@@ -197,7 +223,7 @@ func (t *RecorderTimer) WithTag(key string, value interface{}) Timer {
 // RecorderHistogram is a RecorderMetrics that implements Histogram
 type RecorderHistogram struct {
 	RecorderMetric
-	Values []uint64
+	values []uint64
 	mu     sync.Mutex // protects the whole struct
 }
 
@@ -205,8 +231,7 @@ type RecorderHistogram struct {
 func (h *RecorderHistogram) Vals() []uint64 {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-
-	return h.Values
+	return h.values
 }
 
 // AddValue add the given value to the histogram
@@ -214,7 +239,7 @@ func (h *RecorderHistogram) AddValue(value uint64) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	h.Values = append(h.Values, value)
+	h.values = append(h.values, value)
 }
 
 // WithTags adds the passed tags to the Tags recorder map.

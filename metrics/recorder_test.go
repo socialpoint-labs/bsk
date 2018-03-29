@@ -54,41 +54,41 @@ func TestMetricsRecorder(t *testing.T) {
 		c.Inc()
 		c.Inc()
 
-		a.EqualValues(2, c.Value)
+		a.EqualValues(2, c.Val())
 
 		// test counter tags
 		a.Equal(c.Tags(), tags)
 		c.WithTags(moreTags...) // another way to set tags
 
 		c.Inc()
-		a.EqualValues(3, c.Value)
+		a.EqualValues(3, c.Val())
 
 		a.Equal(append(tags, moreTags...), c.Tags())
 
 		// test counter add from inc
 		c.Add(10)
-		a.EqualValues(13, c.Value)
+		a.EqualValues(13, c.Val())
 
 		// test counter add
 
 		c = r.Counter(metricName, tags...).(*metrics.RecorderCounter)
 		c.WithTags(tags...)
 		c.Add(10)
-		a.EqualValues(23, c.Value)
+		a.EqualValues(23, c.Val())
 
 		// test gauge
 		metricName = "gauge"
 		g := r.Gauge(metricName, tags...).(*metrics.RecorderGauge)
 		g.Update(math.Pi)
-		a.Equal(math.Pi, g.Value)
+		a.Equal(math.Pi, g.Val())
 		g.Update(math.E)
-		a.EqualValues(math.E, g.Value)
+		a.EqualValues(math.E, g.Val())
 
 		// test gauge tags
 		a.Equal(g.Tags(), tags)
 		g.WithTags(moreTags...) // another way to set tags
 		g.Update(math.Ln2)
-		a.EqualValues(math.Ln2, g.Value)
+		a.EqualValues(math.Ln2, g.Val())
 		a.EqualValues(g.Tags(), append(tags, moreTags...))
 		g.WithTag(lastTagKey, lastTagValue) // and another way to add one tag
 		a.Equal(g.Tags(), append(append(tags, moreTags...), lastTag))
@@ -97,15 +97,15 @@ func TestMetricsRecorder(t *testing.T) {
 		metricName = "event"
 		e := r.Event(metricName, tags...).(*metrics.RecorderEvent)
 		e.Send()
-		a.Equal("event|", e.Event)
+		a.Equal("event|", e.Event())
 		e.SendWithText("msg")
-		a.Equal("event|msg", e.Event)
+		a.Equal("event|msg", e.Event())
 
 		// test event tags
 		a.Equal(e.Tags(), tags)
 		e.WithTags(moreTags...) // another way to set tags
 		e.SendWithText("msg2")
-		a.Equal("event|msg2", e.Event)
+		a.Equal("event|msg2", e.Event())
 		a.Equal(append(tags, moreTags...), e.Tags())
 		e.WithTag(lastTagKey, lastTagValue) // and another way to add one tag
 		a.Equal(e.Tags(), append(append(tags, moreTags...), lastTag))
@@ -128,7 +128,7 @@ func TestMetricsRecorder(t *testing.T) {
 		h := r.Histogram(metricName, tags...).(*metrics.RecorderHistogram)
 		h.AddValue(42)
 		h.AddValue(666)
-		a.Equal([]uint64{42, 666}, h.Values)
+		a.Equal([]uint64{42, 666}, h.Vals())
 
 		// test histogram tags
 		a.Equal(h.Tags(), tags)
@@ -192,12 +192,12 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 		}
 	}
 
-	a.EqualValues(2, c.Value)
-	a.EqualValues(123, g.Value)
-	a.WithinDuration(timer.StartedTime, timer.StoppedTime, time.Duration(time.Millisecond))
-	values := h.Values
+	a.EqualValues(2, c.Val())
+	a.EqualValues(123, g.Val())
+	a.WithinDuration(timer.StartedTime(), timer.StoppedTime(), time.Duration(time.Millisecond))
+	values := h.Vals()
 	sort.Slice(values, func(i, j int) bool {
 		return values[i] < values[j]
 	})
-	a.Equal([]uint64{42, 42, 666, 666}, h.Values)
+	a.Equal([]uint64{42, 42, 666, 666}, h.Vals())
 }
