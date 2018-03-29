@@ -30,7 +30,7 @@ func Append(errs ...error) error {
 }
 
 // Walk allows to traverse a multi error with an custom function
-func Walk(e error, f func(int, error)) {
+func Walk(e error, f func(error)) {
 	var es errors
 
 	switch e := e.(type) {
@@ -40,16 +40,16 @@ func Walk(e error, f func(int, error)) {
 		es = []error{e}
 	}
 
-	for i, e := range es {
-		f(i, e)
+	for _, e := range es {
+		f(e)
 	}
 }
 
 type errors []error
 
 func (es errors) Error() string {
-	items := make([]string, len(es))
-	Walk(es, func(i int, e error) { items[i] = fmt.Sprintf("- %s", e) })
+	var items []string
+	Walk(es, func(e error) { items = append(items, fmt.Sprintf("- %s", e)) })
 
 	return fmt.Sprintf("%d errors occurred:\n%s", len(es), strings.Join(items, "\n"))
 }
