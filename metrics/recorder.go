@@ -43,8 +43,8 @@ type RecorderCounter struct {
 	mu    sync.Mutex // protects the whole struct
 }
 
-// Val returns the counter value in a thread-safe manner
-func (c *RecorderCounter) Val() uint64 {
+// Value returns the counter value in a thread-safe manner
+func (c *RecorderCounter) Value() uint64 {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return c.value
@@ -85,8 +85,8 @@ type RecorderGauge struct {
 	mu    sync.Mutex // protects the whole struct
 }
 
-// Val returns the counter value in a thread-safe manner
-func (g *RecorderGauge) Val() interface{} {
+// Value returns the counter value in a thread-safe manner
+func (g *RecorderGauge) Value() interface{} {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	return g.value
@@ -227,8 +227,8 @@ type RecorderHistogram struct {
 	mu     sync.Mutex // protects the whole struct
 }
 
-// Vals returns the histogram values in a thread-safe manner
-func (h *RecorderHistogram) Vals() []uint64 {
+// Values returns the histogram values in a thread-safe manner
+func (h *RecorderHistogram) Values() []uint64 {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	return h.values

@@ -54,41 +54,41 @@ func TestMetricsRecorder(t *testing.T) {
 		c.Inc()
 		c.Inc()
 
-		a.EqualValues(2, c.Val())
+		a.EqualValues(2, c.Value())
 
 		// test counter tags
 		a.Equal(c.Tags(), tags)
 		c.WithTags(moreTags...) // another way to set tags
 
 		c.Inc()
-		a.EqualValues(3, c.Val())
+		a.EqualValues(3, c.Value())
 
 		a.Equal(append(tags, moreTags...), c.Tags())
 
 		// test counter add from inc
 		c.Add(10)
-		a.EqualValues(13, c.Val())
+		a.EqualValues(13, c.Value())
 
 		// test counter add
 
 		c = r.Counter(metricName, tags...).(*metrics.RecorderCounter)
 		c.WithTags(tags...)
 		c.Add(10)
-		a.EqualValues(23, c.Val())
+		a.EqualValues(23, c.Value())
 
 		// test gauge
 		metricName = "gauge"
 		g := r.Gauge(metricName, tags...).(*metrics.RecorderGauge)
 		g.Update(math.Pi)
-		a.Equal(math.Pi, g.Val())
+		a.Equal(math.Pi, g.Value())
 		g.Update(math.E)
-		a.EqualValues(math.E, g.Val())
+		a.EqualValues(math.E, g.Value())
 
 		// test gauge tags
 		a.Equal(g.Tags(), tags)
 		g.WithTags(moreTags...) // another way to set tags
 		g.Update(math.Ln2)
-		a.EqualValues(math.Ln2, g.Val())
+		a.EqualValues(math.Ln2, g.Value())
 		a.EqualValues(g.Tags(), append(tags, moreTags...))
 		g.WithTag(lastTagKey, lastTagValue) // and another way to add one tag
 		a.Equal(g.Tags(), append(append(tags, moreTags...), lastTag))
@@ -128,7 +128,7 @@ func TestMetricsRecorder(t *testing.T) {
 		h := r.Histogram(metricName, tags...).(*metrics.RecorderHistogram)
 		h.AddValue(42)
 		h.AddValue(666)
-		a.Equal([]uint64{42, 666}, h.Vals())
+		a.Equal([]uint64{42, 666}, h.Values())
 
 		// test histogram tags
 		a.Equal(h.Tags(), tags)
@@ -192,12 +192,12 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 		}
 	}
 
-	a.EqualValues(2, c.Val())
-	a.EqualValues(123, g.Val())
+	a.EqualValues(2, c.Value())
+	a.EqualValues(123, g.Value())
 	a.WithinDuration(timer.StartedTime(), timer.StoppedTime(), time.Duration(time.Millisecond))
-	values := h.Vals()
+	values := h.Values()
 	sort.Slice(values, func(i, j int) bool {
 		return values[i] < values[j]
 	})
-	a.Equal([]uint64{42, 42, 666, 666}, h.Vals())
+	a.Equal([]uint64{42, 42, 666, 666}, h.Values())
 }
