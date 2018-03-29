@@ -46,28 +46,21 @@ func TestAppend(t *testing.T) {
 	})
 }
 
-func TestFormat(t *testing.T) {
+func TestWalk(t *testing.T) {
 	t.Parallel()
 
-	t.Run("it format errors with the formatter function", func(t *testing.T) {
-		e1 := errors.New("e1")
-		e2 := errors.New("e2")
-		e3 := errors.New("e3")
+	e1 := errors.New("e1")
+	e2 := errors.New("e2")
+	e3 := errors.New("e3")
 
-		formatter := func(es []error) string {
-			s := ""
-			for _, e := range es {
-				s = s + e.Error()
-			}
-			return s
-		}
+	var s string
+	walker := func(i int, e error) { s = s + e.Error() }
 
-		err := multierror.Append(e1, e2, e3)
-		res := multierror.Format(err, formatter)
-		assert.Equal(t, "e1e2e3", res)
+	err := multierror.Append(e1, e2, e3)
+	multierror.Walk(err, walker)
+	assert.Equal(t, "e1e2e3", s)
 
-		res = multierror.Format(errors.New("test error"), formatter)
-		assert.Equal(t, "test error", res)
-
-	})
+	s = ""
+	multierror.Walk(errors.New("test error"), walker)
+	assert.Equal(t, "test error", s)
 }
