@@ -24,7 +24,9 @@ func wgDoneRunner(ctx context.Context, wg *sync.WaitGroup) contextx.RunnerFunc {
 }
 
 func TestARunnerRuns(t *testing.T) {
-	assert := assert.New(t)
+	t.Parallel()
+	a := assert.New(t)
+
 	ctx := context.Background()
 
 	contextx.NopRunner().Run(ctx)
@@ -34,26 +36,30 @@ func TestARunnerRuns(t *testing.T) {
 	wg.Add(1)
 	runner := wgDoneRunner(ctx, wg)
 	runner.Run(ctx)
-	assert.False(waitTimeout(wg, time.Second), "waitgroup timeout")
+	a.False(waitTimeout(wg, time.Second), "waitgroup timeout")
 }
 
 func TestRunnerAdaptation(t *testing.T) {
-	assert := assert.New(t)
+	t.Parallel()
+	a := assert.New(t)
+
 	ctx := context.TODO()
 
 	noopAdapter().Adapt(contextx.NopRunner()).Run(ctx)
-	// nothing to assert here really
+	// nothing to a here really
 
 	wg := &sync.WaitGroup{}
 
 	adapter := wgAddAdapter(wg)
 	runner := wgDoneRunner(ctx, wg)
 	adapter.Adapt(runner).Run(ctx)
-	assert.False(waitTimeout(wg, time.Second), "waitgroup timeout")
+	a.False(waitTimeout(wg, time.Second), "waitgroup timeout")
 }
 
 func TestMultiRunnerAndMultiAdapter(t *testing.T) {
-	assert := assert.New(t)
+	t.Parallel()
+	a := assert.New(t)
+
 	ctx := context.TODO()
 
 	wg := &sync.WaitGroup{}
@@ -70,7 +76,25 @@ func TestMultiRunnerAndMultiAdapter(t *testing.T) {
 	)
 
 	mr.Run(ctx)
-	assert.False(waitTimeout(wg, time.Second), "waitgroup timeout")
+	a.False(waitTimeout(wg, time.Second), "waitgroup timeout")
+}
+
+func TestMultiRunnerWithRunnerInstances(t *testing.T) {
+	t.Parallel()
+	a := assert.New(t)
+
+	ctx := context.TODO()
+
+	num := 5
+
+	wg := &sync.WaitGroup{}
+	wg.Add(num)
+
+	runner := wgDoneRunner(ctx, wg)
+
+	contextx.MultiRunnerWithRunnerInstances(runner, num).Run(ctx)
+
+	a.False(waitTimeout(wg, time.Second), "waitgroup timeout")
 }
 
 // waitTimeout waits for the waitgroup for the specified max timeout.
