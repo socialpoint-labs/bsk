@@ -53,29 +53,45 @@ func (mi *MetricsInstrument) Timer(name string, tags ...metrics.Tag) metrics.Tim
 	return mi.timerMock
 }
 
-type TimerMock struct {
+type TimerSpy struct {
 	metrics.Timer
-	TagsMap map[string]interface{}
-	Started bool
-	Stopped bool
+	tagMapMutex sync.RWMutex
+	TagsMap     map[string]interface{}
+	Started     bool
+	Stopped     bool
 }
 
-func (tm *TimerMock) WithTags(tags ...metrics.Tag) metrics.Timer {
+func (tm *TimerSpy) WithTags(tags ...metrics.Tag) metrics.Timer {
+	tm.tagMapMutex.Lock()
+	defer tm.tagMapMutex.Unlock()
 	for _, t := range tags {
 		tm.TagsMap[t.Key] = t.Value
 	}
 	return tm
 }
 
-func (tm *TimerMock) WithTag(key string, value interface{}) metrics.Timer {
+func (tm *TimerSpy) WithTag(key string, value interface{}) metrics.Timer {
+	tm.tagMapMutex.Lock()
+	defer tm.tagMapMutex.Unlock()
 	tm.TagsMap[key] = value
 	return tm
 }
 
-func (tm *TimerMock) Start() {
+func (tm *TimerSpy) Tags() metrics.Tags {
+	tm.tagMapMutex.RLock()
+	defer tm.tagMapMutex.RUnlock()
+	tags := metrics.Tags{}
+	for key, value := range tm.TagsMap {
+		tags = append(tags, metrics.Tag{Key: key, Value: value})
+	}
+
+	return tags
+}
+
+func (tm *TimerSpy) Start() {
 	tm.Started = true
 }
-func (tm *TimerMock) Stop() {
+func (tm *TimerSpy) Stop() {
 	tm.Stopped = true
 }
 
@@ -111,9 +127,11 @@ func TestFaultTolerance(t *testing.T) {
 func TestInstrumentRequestDurationMetric(t *testing.T) {
 	assert := assert.New(t)
 
-	timer := &TimerMock{TagsMap: make(map[string]interface{})}
+	timer := &TimerSpy{TagsMap: make(map[string]interface{})}
 	metricsInstrument := &MetricsInstrument{timerMock: timer}
-	customTag := metrics.Tag{Key: "tag", Value: "test"}
+	tag := "tag"
+	value := "test"
+	customTag := metrics.Tag{Key: tag, Value: value}
 	client := httpx.DecorateClient(&NoopClient{}, httpx.InstrumentRequestDurationMetric(metricsInstrument, customTag))
 
 	req, err := http.NewRequest("GET", "http://example.com", nil)
@@ -122,9 +140,11 @@ func TestInstrumentRequestDurationMetric(t *testing.T) {
 	resp, err := client.Do(req)
 	assert.NoError(err)
 
-	assert.Equal(http.StatusOK, timer.TagsMap["code"])
-	assert.Equal("get", timer.TagsMap["method"])
-	assert.Equal("test", timer.TagsMap["tag"])
+	tags := timer.Tags()
+	assert.Contains(tags, metrics.Tag{Key: "code", Value: http.StatusOK})
+	assert.Contains(tags, metrics.Tag{Key: "method", Value: "get"})
+	assert.Contains(tags, metrics.Tag{Key: tag, Value: value})
+	assert.Equal(value, timer.TagsMap[tag])
 	assert.True(timer.Started)
 	assert.True(timer.Stopped)
 
