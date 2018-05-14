@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	bufferSize     = 1024
-	datadogAddress = "127.0.0.1:8125"
+	bufferSize      = 1024
+	datadogHost     = "127.0.0.1"
+	datadogHostPort = "8125"
 	// this is datadog's agent default flush time, in case we lower it in the agent's conf change it here also
 	datadogFlush = FlushEvery15s
 )
@@ -60,11 +61,60 @@ func NewStdout(flushEvery time.Duration, errorHandler ErrorHandler) *Publisher {
 	return NewPublisher(os.Stdout, StdoutEncoder, flushEvery, errorHandler)
 }
 
+// A DatadogOption is a functional option for building a Datadog Publisher
+type DatadogOption func(*datadogOptions)
+
+type datadogOptions struct {
+	host          string
+	port          string
+	flushInterval time.Duration
+}
+
+// WithDDHost returns an option that sets a datadog host
+func WithDDHost(h string) DatadogOption {
+	return func(o *datadogOptions) {
+		o.host = h
+	}
+}
+
+// WithDDFlushInterval returns an option that sets the datadog flush ionterval
+func WithDDFlushInterval(i time.Duration) DatadogOption {
+	return func(o *datadogOptions) {
+		o.flushInterval = i
+	}
+}
+
+// WithDDPort returns an option that sets the datadog host port
+func WithDDPort(p string) DatadogOption {
+	return func(o *datadogOptions) {
+		o.port = p
+	}
+}
+
 // NewDataDog returns a publisher that sends the metrics to the datadog agent.
-func NewDataDog() *Publisher {
-	addr, err := net.ResolveUDPAddr("udp", datadogAddress)
+func NewDataDog(opts ...DatadogOption) *Publisher {
+	options := &datadogOptions{}
+	for _, o := range opts {
+		o(options)
+	}
+
+	if options.host == "" {
+		options.host = datadogHost
+	}
+
+	if options.port == "" {
+		options.port = datadogHostPort
+	}
+
+	if options.flushInterval == 0 {
+		options.flushInterval = datadogFlush
+	}
+
+	url := fmt.Sprintf("%s:%s", options.host, options.port)
+
+	addr, err := net.ResolveUDPAddr("udp", url)
 	if err != nil {
-		panic(fmt.Sprintf("cannot resolve UDP addr `%s`: `%s`", datadogAddress, err))
+		panic(fmt.Sprintf("cannot resolve UDP addr `%s`: `%s`", url, err))
 	}
 
 	client, err := net.DialUDP("udp", nil, addr)
@@ -72,7 +122,7 @@ func NewDataDog() *Publisher {
 		panic(fmt.Sprintf("cannot create UDP client: `%s`", err.Error()))
 	}
 
-	return NewPublisher(client, StatsDEncoder, datadogFlush, nil)
+	return NewPublisher(client, StatsDEncoder, options.flushInterval, nil)
 }
 
 // Counter returns a new counter with the provided name and tags

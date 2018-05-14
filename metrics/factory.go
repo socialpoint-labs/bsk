@@ -17,16 +17,19 @@ func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
 	}
 
 	params := URL.Query()
-	namespace := params.Get("namespace")
-	if URL.Scheme == "datadog" && namespace == "" {
-		panic("datadog metrics need a namespace")
-	}
 
 	// publisher is both Metrics and Runner
 	var publisher *Publisher
+	namespace := params.Get("namespace")
 	switch URL.Scheme {
 	case "datadog":
-		publisher = NewDataDog()
+		if namespace == "" {
+			panic("datadog metrics need a namespace")
+		}
+		publisher = NewDataDog(
+			WithDDHost(params.Get("host")),
+			WithDDPort(params.Get("port")),
+		)
 	case "stdout":
 		publisher = NewStdout(100*time.Millisecond, DiscardErrors)
 	case "discard":
