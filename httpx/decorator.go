@@ -179,7 +179,7 @@ func LoggingDecorator(logWriter io.Writer) Decorator {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			resLogger := &responseLogger{w, 0, 0}
 			h.ServeHTTP(resLogger, req)
-			fmt.Fprintln(logWriter, formatLogLine(req, time.Now(), resLogger.Status(), resLogger.Size()))
+			_, _ = fmt.Fprintln(logWriter, formatLogLine(req, time.Now(), resLogger.Status(), resLogger.Size()))
 		})
 	}
 }

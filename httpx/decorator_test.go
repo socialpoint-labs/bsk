@@ -229,7 +229,7 @@ func TestLogging(t *testing.T) {
 		"/test",
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, text)
+			_, _ = fmt.Fprint(w, text)
 		}),
 		httpx.LoggingDecorator(writerMock),
 	)
