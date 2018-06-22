@@ -82,7 +82,7 @@ func TestAddHeaderDecorator(t *testing.T) {
 
 	h.ServeHTTP(w, r)
 
-	headers := w.HeaderMap[http.CanonicalHeaderKey("key")]
+	headers := w.Result().Header[http.CanonicalHeaderKey("key")]
 	assert.Equal("value1", headers[0])
 	assert.Equal("value2", headers[1])
 }
@@ -167,9 +167,9 @@ func TestEnableCORSDecorator(t *testing.T) {
 
 	h.ServeHTTP(w, r)
 
-	assert.Equal("*", w.HeaderMap.Get("Access-Control-Allow-Origin"))
-	assert.Equal("GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS", w.HeaderMap.Get("Access-Control-Allow-Methods"))
-	assert.Equal("Origin,Accept,Content-Type,Authorization", w.HeaderMap.Get("Access-Control-Allow-Headers"))
+	assert.Equal("*", w.Result().Header.Get("Access-Control-Allow-Origin"))
+	assert.Equal("GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS", w.Result().Header.Get("Access-Control-Allow-Methods"))
+	assert.Equal("Origin,Accept,Content-Type,Authorization", w.Result().Header.Get("Access-Control-Allow-Headers"))
 
 	assert.Equal(http.StatusOK, w.Code)
 }
@@ -229,7 +229,7 @@ func TestLogging(t *testing.T) {
 		"/test",
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, text)
+			_, _ = fmt.Fprint(w, text)
 		}),
 		httpx.LoggingDecorator(writerMock),
 	)
