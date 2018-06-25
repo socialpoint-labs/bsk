@@ -4,9 +4,12 @@
 package logx
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"runtime"
+	"strings"
 	"time"
 )
 
@@ -44,16 +47,19 @@ func (l Level) String() string {
 // DefaultMinLevel is the minimum debug level for which the logs will appear.
 var DefaultMinLevel = DebugLevel
 
+// DefaultFileSkipLevel is the number of stack frames to ascend to get the calling file
+var DefaultFileSkipLevel = 3
+
 // a log entry has a message, some fields (optional) and a log level
 type entry struct {
 	message string
 	fields  []Field
 	level   Level
 	time    *time.Time
+	file    string
 }
 
-// Logger defines the log methods Debug and Info as defined in
-// and also provides a level getter and a method to add fields to a log.
+// Logger defines the log methods Debug and Info
 type Logger interface {
 	Debug(string, ...Field)
 	Info(string, ...Field)
@@ -61,10 +67,11 @@ type Logger interface {
 
 // A Log implements Logger and has a marshaler, a writer and a minimum log level.
 type Log struct {
-	marshaler   Marshaler
-	writer      io.Writer
-	level       Level
-	withoutTime bool
+	marshaler     Marshaler
+	writer        io.Writer
+	level         Level
+	withoutTime   bool
+	fileSkipLevel int
 }
 
 // Debug logs a message at level Debug
@@ -92,6 +99,7 @@ func (l *Log) log(level Level, message string, fields ...Field) {
 		fields:  fields,
 		level:   level,
 		time:    t,
+		file:    fileInfo(l.fileSkipLevel),
 	}
 	data, err := l.marshaler.Marshal(entry)
 	if err == nil {
@@ -119,6 +127,9 @@ func NewLogstash(channel, product, application string, opts ...Option) *Log {
 	if options.level == 0 {
 		options.level = DefaultMinLevel
 	}
+	if options.fileSkipLevel == 0 {
+		options.fileSkipLevel = DefaultFileSkipLevel
+	}
 
 	return loggerFromOptions(options)
 }
@@ -138,6 +149,9 @@ func New(opts ...Option) *Log {
 	}
 	if options.level == 0 {
 		options.level = DefaultMinLevel
+	}
+	if options.fileSkipLevel == 0 {
+		options.fileSkipLevel = DefaultFileSkipLevel
 	}
 
 	return loggerFromOptions(options)
@@ -159,6 +173,9 @@ func NewDummy(opts ...Option) *Log {
 	if options.level == 0 {
 		options.level = DefaultMinLevel
 	}
+	if options.fileSkipLevel == 0 {
+		options.fileSkipLevel = DefaultFileSkipLevel
+	}
 
 	return loggerFromOptions(options)
 }
@@ -169,5 +186,20 @@ func loggerFromOptions(opts *options) *Log {
 		opts.writer,
 		opts.level,
 		opts.withoutTime,
+		opts.fileSkipLevel,
 	}
+}
+
+func fileInfo(skip int) string {
+	_, file, line, ok := runtime.Caller(skip)
+	if !ok {
+		file = "<???>"
+		line = 1
+	} else {
+		slash := strings.LastIndex(file, "/")
+		if slash >= 0 {
+			file = file[slash+1:]
+		}
+	}
+	return fmt.Sprintf("%s:%d", file, line)
 }
