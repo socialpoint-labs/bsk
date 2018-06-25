@@ -1,8 +1,8 @@
 package httpx
 
 import (
+	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/socialpoint-labs/bsk/metrics"
@@ -50,5 +50,5 @@ func (r *responseWriterDelegator) WriteHeader(code int) {
 }
 
 func httpStatusCodeClass(code int) string {
-	return strconv.Itoa(code/100) + "xx"
+	return fmt.Sprintf("%dxx", code/100)
 }

@@ -12,39 +12,48 @@ import (
 )
 
 func TestInstrument_RequestsDuration(t *testing.T) {
-	assert := assert.New(t)
+	const waitTime = 50 * time.Millisecond
+	const deltaTime = 2 * waitTime
 
-	for _, testCase := range []struct {
-		waitTime     time.Duration
-		deltaTime    time.Duration
+	t.Parallel()
+	a := assert.New(t)
+
+	for _, tc := range []struct {
 		tags         metrics.Tags
 		expectedTags int
 	}{
-		{time.Millisecond * 50, 2 * time.Millisecond * 50, nil, 4},
-		{time.Millisecond * 50, 2 * time.Millisecond * 50, []metrics.Tag{
-			metrics.NewTag("test", "life"),
-			metrics.NewTag("potato", "paco"),
-		}, 6},
+		{
+			expectedTags: 4,
+		},
+		{
+			tags: []metrics.Tag{
+				metrics.NewTag("test", "test-value"),
+				metrics.NewTag("foo", "bar"),
+			},
+			expectedTags: 6,
+		},
 	} {
 		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			time.Sleep(testCase.waitTime)
+			time.Sleep(waitTime)
+			w.WriteHeader(http.StatusNoContent)
 		})
 
 		recorder := metrics.NewRecorder()
 
 		h := httpx.InstrumentDecorator(recorder)(handler)
-		if testCase.tags != nil {
-			h = httpx.InstrumentDecorator(recorder, testCase.tags...)(handler)
+		if tc.tags != nil {
+			h = httpx.InstrumentDecorator(recorder, tc.tags...)(handler)
 		}
 
 		w := httptest.NewRecorder()
 		r, err := http.NewRequest("", "", nil)
-		assert.NoError(err)
+		a.NoError(err)
 
 		h.ServeHTTP(w, r)
 
 		timer := recorder.Get("http.request_duration").(*metrics.RecorderTimer)
-		assert.WithinDuration(timer.StartedTime(), timer.StoppedTime(), testCase.deltaTime)
-		assert.Len(timer.Tags(), testCase.expectedTags)
+		a.WithinDuration(timer.StartedTime(), timer.StoppedTime(), deltaTime)
+		a.Len(timer.Tags(), tc.expectedTags)
+		a.Equal(http.StatusNoContent, w.Code)
 	}
 }
