@@ -20,3 +20,6 @@ install:
 script:
     - make ci-check
     - goveralls -coverprofile=coverage-all.out
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
