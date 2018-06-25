@@ -6,11 +6,11 @@ import "io"
 type Option func(*options)
 
 type options struct {
-	marshaler     Marshaler
-	writer        io.Writer
-	level         Level
-	withoutTime   bool
-	fileSkipLevel int
+	marshaler       Marshaler
+	writer          io.Writer
+	level           Level
+	withoutTime     bool
+	withoutFileInfo bool
 }
 
 // MarshalerOpt is an option that changes the log marshaler.
@@ -41,9 +41,9 @@ func WithoutTimeOpt() Option {
 	}
 }
 
-// FileSkipLevel is an option that specify is the number of stack frames to ascend to get the calling file
-func FileSkipLevel(l int) Option {
+// WithoutFileInfo is an option that disables logging the file and line where the log was called.
+func WithoutFileInfo() Option {
 	return func(o *options) {
-		o.fileSkipLevel = l
+		o.withoutFileInfo = true
 	}
 }

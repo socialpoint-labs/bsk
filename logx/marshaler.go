@@ -57,8 +57,10 @@ func (l HumanMarshaler) Marshal(entry *entry) ([]byte, error) {
 			_, _ = buffer.WriteString(fmt.Sprintf("%v", field.Value))
 		}
 	}
-	_, _ = buffer.WriteString(" ")
-	_, _ = buffer.WriteString(fmt.Sprintf("File: %s", entry.file))
+	if entry.file != "" {
+		_, _ = buffer.WriteString(" ")
+		_, _ = buffer.WriteString(fmt.Sprintf("File: %s", entry.file))
+	}
 	_, _ = buffer.WriteString("\n")
 	return buffer.Bytes(), nil
 }
@@ -114,7 +116,9 @@ func (l *LogstashMarshaler) Marshal(entry *entry) ([]byte, error) {
 	data["channel"] = l.channel
 	data["application"] = l.application
 	data["product"] = l.product
-	data["file"] = entry.file
+	if entry.file != "" {
+		data["file"] = entry.file
+	}
 	// rest
 	for _, field := range entry.fields {
 		var value interface{}
