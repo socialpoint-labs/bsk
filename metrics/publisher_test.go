@@ -93,7 +93,7 @@ func TestPublisherFlushMetricsToRealUDPServer(t *testing.T) {
 	line, err := reader.ReadString('\n')
 
 	a.NoError(err)
-	a.Equal("test:123|c|@1.0000|#\n", line)
+	a.Equal("test:123|c|@1.0000\n", line)
 }
 
 func TestTimerEvent(t *testing.T) {
@@ -121,7 +121,7 @@ func TestTimerEvent(t *testing.T) {
 
 	a.NoError(err)
 	a.Contains(line, "test:")
-	a.Contains(line, "|ms|@1.0000|#\n")
+	a.Contains(line, "|ms|@1.0000\n")
 }
 
 func TestPublisherHistogram(t *testing.T) {
@@ -147,11 +147,11 @@ func TestPublisherHistogram(t *testing.T) {
 
 	line, err := reader.ReadString('\n')
 	a.NoError(err)
-	a.Equal("test:42|h|@1.0000|#\n", line)
+	a.Equal("test:42|h|@1.0000\n", line)
 
 	line, err = reader.ReadString('\n')
 	a.NoError(err)
-	a.Equal("test:666|h|@1.0000|#\n", line)
+	a.Equal("test:666|h|@1.0000\n", line)
 }
 
 type recorder chan string
