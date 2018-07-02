@@ -20,20 +20,23 @@ func StatsDEncoder(name string, op Op, value interface{}, tags Tags, rate float6
 		ct[k] = fmt.Sprintf("%v:%v", t.Key, t.Value)
 	}
 	st := strings.Join(ct, ",")
+	if st != "" {
+		st = "|#" + st
+	}
 
 	switch op {
 	case OpCounterAdd:
-		return fmt.Sprintf("%s:%v|c|@%.4f|#%s\n", name, value, rate, st), nil
+		return fmt.Sprintf("%s:%v|c|@%.4f%s\n", name, value, rate, st), nil
 	case OpGaugeUpdate:
-		return fmt.Sprintf("%s:%v|g|@%.4f|#%s\n", name, value, rate, st), nil
+		return fmt.Sprintf("%s:%v|g|@%.4f%s\n", name, value, rate, st), nil
 	case OpHistogramUpdate:
-		return fmt.Sprintf("%s:%v|h|@%.4f|#%s\n", name, value, rate, st), nil
+		return fmt.Sprintf("%s:%v|h|@%.4f%s\n", name, value, rate, st), nil
 	case OpEventSend:
 		title := fmt.Sprintf("%v", name)
 		text := fmt.Sprintf("%v", value)
-		return fmt.Sprintf("_e{%d,%d}:%s|%s|#%s\n", len(title), len(text), title, text, st), nil
+		return fmt.Sprintf("_e{%d,%d}:%s|%s%s\n", len(title), len(text), title, text, st), nil
 	case OpTimerStop:
-		return fmt.Sprintf("%s:%v|ms|@%.4f|#%s\n", name, value, rate, st), nil
+		return fmt.Sprintf("%s:%v|ms|@%.4f%s\n", name, value, rate, st), nil
 	}
 
 	return "", fmt.Errorf("statsd encoder: operation %v not supported", op)
