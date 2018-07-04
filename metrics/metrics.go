@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"strconv"
 	"time"
 )
 
@@ -23,6 +24,17 @@ const (
 	OpEventSend
 	OpTimerStop
 )
+
+func (op Op) String() string {
+	name := []string{"counter add", "gauge update", "histogram update", "event send", "timer stop"}
+	i := uint8(op)
+	switch {
+	case i <= uint8(OpTimerStop):
+		return name[i]
+	default:
+		return strconv.Itoa(int(i))
+	}
+}
 
 // Tag is a key/value pair associated with an observation for a specific
 // metric. Tags may be ignored by implementations.

@@ -9,6 +9,8 @@ import (
 )
 
 func TestStatsDEncoder(t *testing.T) {
+	t.Parallel()
+
 	var tests = []struct {
 		name  string
 		op    metrics.Op
@@ -48,6 +50,8 @@ func TestStatsDEncoder(t *testing.T) {
 }
 
 func TestLibratoStatsDEncoder(t *testing.T) {
+	t.Parallel()
+
 	var tests = []struct {
 		name  string
 		op    metrics.Op

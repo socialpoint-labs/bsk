@@ -3,6 +3,7 @@ package metrics
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Encoder is the signature for encoders
@@ -60,6 +61,33 @@ func LibratoStatsDEncoder(name string, op Op, value interface{}, _ Tags, rate fl
 	}
 
 	return "", fmt.Errorf("librato encoder: operation %v not supported", op)
+}
+
+// DataDogLambdaEncoder implements generating DataDog metrics from AWS Lambda functions.
+// Supported metrics are: count, gauge, histogram.
+// Events are NOT supported.
+// See https://docs.datadoghq.com/integrations/amazon_lambda/
+func DataDogLambdaEncoder(name string, op Op, value interface{}, tags Tags, rate float64) (string, error) {
+	return formatDataDogLambdaMetric(name, op, value, tags, time.Now())
+}
+
+func formatDataDogLambdaMetric(name string, op Op, value interface{}, tags Tags, t time.Time) (string, error) {
+	ct := make([]string, len(tags))
+	for k, t := range tags {
+		ct[k] = fmt.Sprintf("%v:%v", t.Key, t.Value)
+	}
+	st := strings.Join(ct, ",")
+
+	switch op {
+	case OpCounterAdd:
+		return fmt.Sprintf("MONITORING|%d|%v|count|%s|#%s\n", t.Unix(), value, name, st), nil
+	case OpGaugeUpdate:
+		return fmt.Sprintf("MONITORING|%d|%v|gauge|%s|#%s\n", t.Unix(), value, name, st), nil
+	case OpHistogramUpdate:
+		return fmt.Sprintf("MONITORING|%d|%v|histogram|%s|#%s\n", t.Unix(), value, name, st), nil
+	}
+
+	return "", fmt.Errorf("datadog-lambda encoder: operation %q not supported", op)
 }
 
 // NamespacedEncoder creates a new encoder from a given encoder and namespace
