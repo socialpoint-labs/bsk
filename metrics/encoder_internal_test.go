@@ -1,10 +1,9 @@
 package metrics
 
 import (
+	"errors"
 	"testing"
 	"time"
-
-	"errors"
 
 	"github.com/stretchr/testify/assert"
 )
