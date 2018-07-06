@@ -27,3 +27,11 @@ Dogstatsd (Datadog agent) is a statsd backend server, so you can send custom met
 protocol.
 
 To integrate with Datadog agent, just provide an UDP network connection for the publisher `io.writer`. 
+
+## Integration with DataDog in AWS Lambda functions
+
+A publisher and an encoder are provided to update DataDog metrics from within the execution of AWS Lambda functions.
+
+Only counters, gauges and histograms are supported by DataDog at the moment.
+
+Find more info on [how the integration works](https://docs.datadoghq.com/integrations/amazon_lambda/) in the DataDog site.

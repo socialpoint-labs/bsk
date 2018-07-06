@@ -125,6 +125,11 @@ func NewDataDog(opts ...DatadogOption) *Publisher {
 	return NewPublisher(client, StatsDEncoder, options.flushInterval, nil)
 }
 
+// NewDataDogLambda returns a publisher that satisfies DataDog metrics writing for AWS Lambda.
+func NewDataDogLambda() *Publisher {
+	return NewPublisher(os.Stdout, DataDogLambdaEncoder, FlushEvery3s, nil)
+}
+
 // Counter returns a new counter with the provided name and tags
 func (p *Publisher) Counter(name string, tags ...Tag) Counter {
 	return &publisherCounter{publisherMetric{name: name, tags: tags, nf: p.notify}}

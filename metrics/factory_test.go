@@ -10,7 +10,8 @@ import (
 )
 
 func TestNewPublisherWithDSN(t *testing.T) {
-	assert := assert.New(t)
+	t.Parallel()
+	a := assert.New(t)
 
 	var cancelFuncs []context.CancelFunc
 	for _, testCase := range []struct {
@@ -23,16 +24,19 @@ func TestNewPublisherWithDSN(t *testing.T) {
 		{"datadog://", false},
 		{"datadog://?namespace=my_namespace", true},
 		{"datadog://?namespace=my_namespace&gostats=false", true},
+		{"datadog-lambda://", false},
+		{"datadog-lambda://?namespace=my_namespace", true},
+		{"datadog-lambda://?namespace=my_namespace&gostats=false", true},
 	} {
 		if testCase.isValid {
 			publisher, runner := metrics.NewMetricsRunnerFromDSN(testCase.DSN)
-			assert.NotNil(publisher)
-			assert.NotNil(runner)
+			a.NotNil(publisher)
+			a.NotNil(runner)
 			ctx, cancel := context.WithCancel(context.Background())
 			cancelFuncs = append(cancelFuncs, cancel)
 			go runner.Run(ctx)
 		} else {
-			assert.Panics(func() { metrics.NewMetricsRunnerFromDSN(testCase.DSN) })
+			a.Panics(func() { metrics.NewMetricsRunnerFromDSN(testCase.DSN) })
 		}
 	}
 

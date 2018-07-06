@@ -18,6 +18,8 @@ func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
 
 	params := URL.Query()
 
+	gostats := params.Get("gostats") != "false"
+
 	// publisher is both Metrics and Runner
 	var publisher *Publisher
 	namespace := params.Get("namespace")
@@ -30,6 +32,12 @@ func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
 			WithDDHost(params.Get("host")),
 			WithDDPort(params.Get("port")),
 		)
+	case "datadog-lambda":
+		if namespace == "" {
+			panic("datadog metrics need a namespace")
+		}
+		publisher = NewDataDogLambda()
+		gostats = false
 	case "stdout":
 		publisher = NewStdout(100*time.Millisecond, DiscardErrors)
 	case "discard":
@@ -51,14 +59,13 @@ func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
 	}
 
 	// init runner
-	if params.Get("gostats") == "false" {
-		r = publisher
-	} else {
+	if gostats {
 		r = contextx.MultiRunner(
 			publisher,
 			NewGoStatsRunner(publisher, FlushEvery15s, serviceTag),
 		)
-
+	} else {
+		r = publisher
 	}
 
 	return m, r
