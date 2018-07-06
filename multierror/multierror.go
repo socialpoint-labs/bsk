@@ -29,24 +29,27 @@ func Append(errs ...error) error {
 	return err
 }
 
-// Format allows to format the string representation of a multi error with an alternative formatter function
-func Format(err error, formatter func([]error) string) string {
-	switch err := err.(type) {
-	case errors:
-		return formatter(err)
+// Walk allows to traverse a multi error with an custom function
+func Walk(e error, f func(error)) {
+	var es errors
 
+	switch e := e.(type) {
+	case errors:
+		es = e
 	default:
-		return formatter([]error{err})
+		es = []error{e}
+	}
+
+	for _, e := range es {
+		f(e)
 	}
 }
 
 type errors []error
 
 func (es errors) Error() string {
-	items := make([]string, len(es))
-	for i, err := range es {
-		items[i] = fmt.Sprintf("- %s", err)
-	}
+	var items []string
+	Walk(es, func(e error) { items = append(items, fmt.Sprintf("- %s", e)) })
 
 	return fmt.Sprintf("%d errors occurred:\n%s", len(es), strings.Join(items, "\n"))
 }
