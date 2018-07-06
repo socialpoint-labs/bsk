@@ -65,20 +65,38 @@ func (l HumanMarshaler) Marshal(entry *entry) ([]byte, error) {
 
 // LogstashMarshaler marshalls the data to a logstash-compatible JSON
 type LogstashMarshaler struct {
-	channel     string
-	product     string
-	application string
-	hostname    string
+	channel            string
+	product            string
+	application        string
+	hostname           string
+	originalValueTypes bool
+}
+
+// LogstashMarshalerOption is the common type for functions that set options on a LogstashMarshaler
+type LogstashMarshalerOption func(*LogstashMarshaler)
+
+// WithOriginalValueTypes is an option that enables writing field values with their original types instead of
+// representing them as strings
+func WithOriginalValueTypes() LogstashMarshalerOption {
+	return func(l *LogstashMarshaler) {
+		l.originalValueTypes = true
+	}
 }
 
 // NewLogstashMarshaler is the constructor of the concrete type.
-func NewLogstashMarshaler(channel, product, application string) *LogstashMarshaler {
-	return &LogstashMarshaler{
+func NewLogstashMarshaler(channel, product, application string, opts ...LogstashMarshalerOption) *LogstashMarshaler {
+	marshaler := &LogstashMarshaler{
 		channel:     channel,
 		product:     product,
 		application: application,
 		hostname:    hostname,
 	}
+
+	for _, op := range opts {
+		op(marshaler)
+	}
+
+	return marshaler
 }
 
 // Marshal returns the info encoded in the logstash format (JSON with special fields)
@@ -99,7 +117,13 @@ func (l *LogstashMarshaler) Marshal(entry *entry) ([]byte, error) {
 	data["file"] = entry.file
 	// rest
 	for _, field := range entry.fields {
-		value := fmt.Sprintf("%v", field.Value)
+		var value interface{}
+		if l.originalValueTypes {
+			value = field.Value
+		} else {
+			value = fmt.Sprintf("%v", field.Value)
+		}
+
 		if _, ok := reservedWords[field.Key]; ok {
 			data[fmt.Sprintf("%sx", field.Key)] = value
 		} else {

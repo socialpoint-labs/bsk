@@ -13,4 +13,3 @@ Features:
 Things not implemented yet:
 
 - colors
-- file and line
