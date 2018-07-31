@@ -13,46 +13,6 @@ import (
 // Decorator wraps/decorate a http.Handler with additional functionality.
 type Decorator func(http.Handler) http.Handler
 
-// CloseNotifierDecorator returns a decorator that cancels the context when the client
-// connection closes unexpectedly.
-//
-// The http.CloseNotifier interface is implemented by http.ResponseWriters which
-// allows detecting when the underlying connection has gone away.
-//
-// This mechanism can be used to cancel long operations on the server
-// if the client has disconnected before the response is ready.
-func CloseNotifierDecorator() Decorator {
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Cancel the context if the client closes the connection
-			if wcn, ok := w.(http.CloseNotifier); ok {
-				ctx, cancel := context.WithCancel(r.Context())
-				r = r.WithContext(ctx)
-
-				// Canceling this context releases resources associated with it, so code should
-				// call cancel as soon as the operations running in this Context complete.
-				// As we have created a new context here, we are responsible for releasing it's resources
-				// by calling the cancellation function.
-				defer cancel()
-
-				// CloseNotify returns a channel that receives at most a single value when
-				// the client connection has gone away.
-
-				// Runs a go-routine to receive this notification and cancel the request context
-				go func() {
-					select {
-					case <-wcn.CloseNotify():
-						cancel()
-					case <-ctx.Done():
-					}
-				}()
-			}
-
-			h.ServeHTTP(w, r)
-		})
-	}
-}
-
 // AddHeaderDecorator returns a decorator that adds the given header to the HTTP response.
 func AddHeaderDecorator(key, value string) Decorator {
 	return func(h http.Handler) http.Handler {

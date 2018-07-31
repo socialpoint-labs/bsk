@@ -1,7 +1,6 @@
 package httpx_test
 
 import (
-	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -27,47 +26,6 @@ func (w *closeNotifyWriter) CloseNotify() <-chan bool {
 		notify <- true
 	}
 	return notify
-}
-
-func TestCloseNotifierDecorator_Client_Close_Connections(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		<-ctx.Done()
-		if ctx.Err() == context.Canceled {
-			w.Header().Set("status", "canceled")
-		}
-	})
-
-	h := httpx.CloseNotifierDecorator()(handler)
-
-	w := &closeNotifyWriter{ResponseRecorder: httptest.NewRecorder(), closed: true}
-
-	r, err := http.NewRequest("GET", "http://example.com/foo", nil)
-	assert.NoError(t, err)
-
-	h.ServeHTTP(w, r)
-
-	assert.Equal(t, w.Header().Get("status"), "canceled")
-}
-
-func TestCloseNotifierDecorator_Request_Ends_Without_Cancelation(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		if ctx.Err() == context.Canceled {
-			w.Header().Set("status", "canceled")
-		}
-	})
-
-	h := httpx.CloseNotifierDecorator()(handler)
-
-	w := &closeNotifyWriter{ResponseRecorder: httptest.NewRecorder(), closed: false}
-
-	r, err := http.NewRequest("GET", "http://example.com/foo", nil)
-	assert.NoError(t, err)
-
-	h.ServeHTTP(w, r)
-
-	assert.NotEqual(t, w.Header().Get("status"), "canceled")
 }
 
 func TestAddHeaderDecorator(t *testing.T) {
