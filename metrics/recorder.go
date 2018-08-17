@@ -184,6 +184,14 @@ func (t *RecorderTimer) StoppedTime() time.Time {
 	return t.stoppedTime
 }
 
+// Duration returns the difference between the stopped time and the started time in a thread-safe manner
+func (t *RecorderTimer) Duration() time.Duration {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	return t.stoppedTime.Sub(t.startedTime)
+}
+
 // Start the timer.
 func (t *RecorderTimer) Start() {
 	t.mu.Lock()

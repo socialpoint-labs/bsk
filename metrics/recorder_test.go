@@ -195,6 +195,7 @@ func TestRecorder_ConcurrentSafety(t *testing.T) {
 	a.EqualValues(2, c.Value())
 	a.EqualValues(123, g.Value())
 	a.WithinDuration(timer.StartedTime(), timer.StoppedTime(), time.Duration(time.Millisecond))
+	a.Equal(timer.StoppedTime().Sub(timer.StartedTime()), timer.Duration())
 	values := h.Values()
 	sort.Slice(values, func(i, j int) bool {
 		return values[i] < values[j]
