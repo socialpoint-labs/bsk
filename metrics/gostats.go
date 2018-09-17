@@ -24,16 +24,13 @@ func NewGoStatsRunner(metrics Metrics, tick time.Duration, t ...Tag) contextx.Ru
 	return &GoStatsRunner{
 		metrics: metrics,
 		tick:    tick,
-		tags:    append(t, Tag{"vm", "go"}),
+		tags:    append(t, Tag{Key: "vm", Value: "go"}),
 	}
 }
 
 type goMetrics struct {
 	// memory
 	memAlloc   Gauge
-	memFrees   Gauge
-	memLookups Gauge
-	memMallocs Gauge
 	// others
 	numGoroutines Gauge
 }
@@ -46,9 +43,6 @@ func (r *GoStatsRunner) Run(ctx context.Context) {
 	goMetrics := &goMetrics{
 		// memory stats
 		memAlloc:   r.metrics.Gauge("go.mem.allocated_bytes", r.tags...),
-		memFrees:   r.metrics.Gauge("go.mem.frees", r.tags...),
-		memLookups: r.metrics.Gauge("go.mem.lookups", r.tags...),
-		memMallocs: r.metrics.Gauge("go.mem.allocations", r.tags...),
 		// others
 		numGoroutines: r.metrics.Gauge("go.goroutines", r.tags...),
 	}
@@ -69,9 +63,6 @@ func collect(metrics *goMetrics) {
 	// memory metrics
 	runtime.ReadMemStats(&memStats) // This takes 50-200us.
 	metrics.memAlloc.Update(memStats.Alloc)
-	metrics.memFrees.Update(memStats.Frees)
-	metrics.memLookups.Update(memStats.Lookups)
-	metrics.memMallocs.Update(memStats.Mallocs)
 
 	// others
 	metrics.numGoroutines.Update(runtime.NumGoroutine())
