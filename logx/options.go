@@ -11,6 +11,7 @@ type options struct {
 	level           Level
 	withoutTime     bool
 	withoutFileInfo bool
+	fileSkipLevel   int
 }
 
 // MarshalerOpt is an option that changes the log marshaler.
@@ -45,5 +46,12 @@ func WithoutTimeOpt() Option {
 func WithoutFileInfo() Option {
 	return func(o *options) {
 		o.withoutFileInfo = true
+	}
+}
+
+// FileSkipLevel is an option that lets you customize how many levels up you want to go to find the file doing the log.
+func FileSkipLevel(l int) Option {
+	return func(o *options) {
+		o.fileSkipLevel = l
 	}
 }
