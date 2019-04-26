@@ -14,20 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type closeNotifyWriter struct {
-	*httptest.ResponseRecorder
-	closed bool
-}
-
-func (w *closeNotifyWriter) CloseNotify() <-chan bool {
-	notify := make(chan bool, 1)
-	if w.closed {
-		// return an already "closed" notifier
-		notify <- true
-	}
-	return notify
-}
-
 func TestAddHeaderDecorator(t *testing.T) {
 	assert := assert.New(t)
 

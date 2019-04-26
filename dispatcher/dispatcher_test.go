@@ -211,11 +211,3 @@ func TestDispatchValueToPointerInterfaceListener(t *testing.T) {
 
 	dispatcher.Dispatch(testEvent2{})
 }
-
-type testUpdateEvent struct {
-	update interface{}
-}
-
-func (ev *testUpdateEvent) Update(update interface{}) {
-	ev.update = update
-}
