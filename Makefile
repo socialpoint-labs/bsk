@@ -14,6 +14,7 @@ test-ci:
 		tail -n +2 coverage.out >> coverage-all.out;)
 
 install-tools:
+	go get github.com/mattn/goveralls
 	go get golang.org/x/tools/cmd/cover
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v1.15.0
 
