@@ -60,7 +60,7 @@ func TestDefaultAndLogstashLogging(t *testing.T) {
 func TestLoggingWithCustomSkipLevel(t *testing.T) {
 	assert := assert.New(t)
 	rec := make(recorder, 1)
-	defaultLogger := logx.New(logx.WriterOpt(rec), logx.WithoutTimeOpt(), logx.FileSkipLevel(4))
+	defaultLogger := logx.New(logx.WriterOpt(rec), logx.WithoutTimeOpt(), logx.AdditionalFileSkipLevel(1))
 
 	log(defaultLogger, "Test")
 	assert.Equal("DEBU Test File: logx_test.go:65\n", <-rec)

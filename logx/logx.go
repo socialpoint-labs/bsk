@@ -134,9 +134,6 @@ func NewLogstash(channel, product, application string, opts ...Option) *Log {
 	if options.level == 0 {
 		options.level = DefaultMinLevel
 	}
-	if options.fileSkipLevel == 0 {
-		options.fileSkipLevel = defaultFileSkipLevel
-	}
 
 	return loggerFromOptions(options)
 }
@@ -156,9 +153,6 @@ func New(opts ...Option) *Log {
 	}
 	if options.level == 0 {
 		options.level = DefaultMinLevel
-	}
-	if options.fileSkipLevel == 0 {
-		options.fileSkipLevel = defaultFileSkipLevel
 	}
 
 	return loggerFromOptions(options)
@@ -180,9 +174,6 @@ func NewDummy(opts ...Option) *Log {
 	if options.level == 0 {
 		options.level = DefaultMinLevel
 	}
-	if options.fileSkipLevel == 0 {
-		options.fileSkipLevel = defaultFileSkipLevel
-	}
 
 	return loggerFromOptions(options)
 }
@@ -194,7 +185,7 @@ func loggerFromOptions(opts *options) *Log {
 		level:           opts.level,
 		withoutTime:     opts.withoutTime,
 		withoutFileInfo: opts.withoutFileInfo,
-		fileSkipLevel:   opts.fileSkipLevel,
+		fileSkipLevel:   defaultFileSkipLevel + opts.additionalFileSkipLevel,
 	}
 }
 
