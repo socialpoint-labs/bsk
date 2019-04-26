@@ -32,21 +32,3 @@ func TestJSON(t *testing.T) {
 	assert.NoError(json.Unmarshal(w.Body.Bytes(), &data))
 	assert.Equal(data, testdata)
 }
-
-type testEncoder struct{}
-
-func (testEncoder) Encode(w http.ResponseWriter, r *http.Request, v interface{}) error {
-	return nil
-}
-func (testEncoder) ContentType(w http.ResponseWriter, r *http.Request) string {
-	return "test/encoder"
-}
-
-func testRequestWithAccept(accept string) *http.Request {
-	r, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		panic("bad request: " + err.Error())
-	}
-	r.Header.Set("Accept", accept)
-	return r
-}
