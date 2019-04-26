@@ -72,6 +72,7 @@ type Log struct {
 	level           Level
 	withoutTime     bool
 	withoutFileInfo bool
+	fileSkipLevel   int
 }
 
 // Debug logs a message at level Debug
@@ -97,7 +98,7 @@ func (l *Log) log(level Level, message string, fields ...Field) {
 
 	var fi string
 	if !l.withoutFileInfo {
-		fi = fileInfo()
+		fi = fileInfo(l.fileSkipLevel)
 	}
 
 	entry := &entry{
@@ -184,11 +185,12 @@ func loggerFromOptions(opts *options) *Log {
 		level:           opts.level,
 		withoutTime:     opts.withoutTime,
 		withoutFileInfo: opts.withoutFileInfo,
+		fileSkipLevel:   defaultFileSkipLevel + opts.additionalFileSkipLevel,
 	}
 }
 
-func fileInfo() string {
-	_, file, line, ok := runtime.Caller(defaultFileSkipLevel)
+func fileInfo(fileSkipLevel int) string {
+	_, file, line, ok := runtime.Caller(fileSkipLevel)
 	if !ok {
 		file = "<???>"
 		line = 1
