@@ -1,0 +1,5 @@
+linters:
+    enable:
+        - golint
+        - goimports
+        - interfacer

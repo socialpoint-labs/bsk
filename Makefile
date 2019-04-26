@@ -14,25 +14,10 @@ test-ci:
 		tail -n +2 coverage.out >> coverage-all.out;)
 
 install-tools:
-	go get github.com/GeertJohan/fgt
-	go get github.com/mattn/goveralls
 	go get golang.org/x/tools/cmd/cover
-	go get golang.org/x/tools/cmd/goimports
-	go get github.com/golang/lint/golint
-	go get github.com/kisielk/errcheck
-	go get honnef.co/go/tools/cmd/gosimple
-	go get mvdan.cc/interfacer
-	go get honnef.co/go/tools/cmd/staticcheck
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v1.15.0
 
 lint:
-	fgt go fmt $(PACKAGES)
-	fgt goimports -w $(SOURCES)
-	fgt golint $(PACKAGES)
-	fgt go vet $(PACKAGES)
-	fgt gosimple $(PACKAGES)
-	fgt interfacer $(PACKAGES)
-	# ignore deferred calls to io.Closer
-	fgt errcheck -ignore Close $(PACKAGES)
-	staticcheck $(PACKAGES)
+	golangci-lint run
 
 ci-check: lint test-ci
