@@ -1,5 +1,6 @@
 SOURCES=$(shell find . -name "*.go" | grep -v vendor/)
 PACKAGES=$(shell go list ./...)
+LINTER_VERSION=1.16.0
 
 deps:
 	go get -t -u ./...
@@ -16,9 +17,9 @@ test-ci:
 install-tools:
 	go get github.com/mattn/goveralls
 	go get golang.org/x/tools/cmd/cover
-	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v1.15.0
+	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v$(LINTER_VERSION)
 
 lint:
 	golangci-lint run
 
-ci-check: lint test-ci
+ci-check: test-ci
