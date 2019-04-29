@@ -2,7 +2,7 @@ language: go
 
 go:
     - '1.10'
-    - 'tip'
+    - '1.x'
 
 env:
   - DEP_VERSION="0.4.1"
