@@ -22,4 +22,4 @@ install-tools:
 lint:
 	golangci-lint run
 
-ci-check: lint test-ci
+ci-check: test-ci
