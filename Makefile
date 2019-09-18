@@ -1,6 +1,6 @@
 SOURCES=$(shell find . -name "*.go" | grep -v vendor/)
 PACKAGES=$(shell go list ./...)
-LINTER_VERSION=1.16.0
+LINTER_VERSION=1.18.0
 
 deps:
 	go get -t -u ./...
@@ -21,5 +21,6 @@ install-tools:
 
 lint:
 	golangci-lint run
+	go mod verify
 
 ci-check: test-ci
