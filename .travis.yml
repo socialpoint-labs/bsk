@@ -2,14 +2,13 @@ language: go
 
 go:
     - '1.13'
-    - '1.x'
+    - 'tip'
 
 install:
     - make install-tools
 
 script:
     - make ci-check
-    - goveralls -coverprofile=coverage-all.out
 
 after_success:
-    - bash <(curl -s https://codecov.io/bash)
+    - test $TRAVIS_GO_VERSION != 'tip' && bash <(curl -s https://codecov.io/bash)
