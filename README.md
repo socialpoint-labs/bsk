@@ -1,4 +1,4 @@
-# BSK [![Build Status](https://travis-ci.org/socialpoint-labs/bsk.svg?branch=master)](https://travis-ci.org/socialpoint-labs/bsk) [![Coverage Status](https://coveralls.io/repos/github/socialpoint-labs/bsk/badge.svg?branch=master)](https://coveralls.io/github/socialpoint-labs/bsk?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/socialpoint-labs/bsk)](https://goreportcard.com/report/github.com/socialpoint-labs/bsk)
+# BSK [![Build Status](https://travis-ci.org/socialpoint-labs/bsk.svg?branch=master)](https://travis-ci.org/socialpoint-labs/bsk) [![codecov](https://codecov.io/gh/socialpoint-labs/bsk/branch/master/graph/badge.svg)](https://codecov.io/gh/socialpoint-labs/bsk) [![Go Report Card](https://goreportcard.com/badge/github.com/socialpoint-labs/bsk)](https://goreportcard.com/report/github.com/socialpoint-labs/bsk)
 
 [![Join the chat at https://gitter.im/socialpoint-labs/bsk](https://badges.gitter.im/socialpoint-labs/bsk.svg)](https://gitter.im/socialpoint-labs/bsk?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
