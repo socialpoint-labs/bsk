@@ -51,7 +51,7 @@ func TestInstrument_RequestsDuration(t *testing.T) {
 
 		h.ServeHTTP(w, r)
 
-		timer := recorder.Get("http.request_duration").(*metrics.RecorderTimer)
+		timer, _ := recorder.Get("http.request_duration").(*metrics.RecorderTimer)
 		a.WithinDuration(timer.StartedTime(), timer.StoppedTime(), deltaTime)
 		a.Len(timer.Tags(), tc.expectedTags)
 		a.Equal(http.StatusNoContent, w.Code)

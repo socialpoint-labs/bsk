@@ -9,9 +9,9 @@ import (
 
 // NewMetricsRunnerFromDSN creates a new metrics publisher and returns its Metrics
 // and Runner from a DSN configuration. If the configuration is not valid it panics.
-func NewMetricsRunnerFromDSN(DSN string) (Metrics, contextx.Runner) {
+func NewMetricsRunnerFromDSN(dsn string) (Metrics, contextx.Runner) {
 	// param validation
-	URL, err := url.Parse(DSN)
+	URL, err := url.Parse(dsn)
 	if err != nil {
 		panic(err)
 	}

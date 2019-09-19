@@ -54,7 +54,7 @@ func TestWalk(t *testing.T) {
 	e3 := errors.New("e3")
 
 	var s string
-	walker := func(e error) { s = s + e.Error() }
+	walker := func(e error) { s += e.Error() }
 
 	err := multierror.Append(e1, e2, e3)
 	multierror.Walk(err, walker)
