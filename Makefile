@@ -8,7 +8,7 @@ lint:
 .PHONY: lint
 
 test:
-	go test ./...
+	GORACE="halt_on_error=1" go test -race ./...
 .PHONY: test
 
 ci-lint:
@@ -20,7 +20,7 @@ ci-lint:
 ci-test:
 	echo "mode: count" > coverage-all.out
 	$(foreach pkg,$(PACKAGES),\
-		GORACE="halt_on_error=1" go test -v -race -cover -coverprofile=coverage.out $(pkg) || exit 1;\
+		GORACE="halt_on_error=1" go test -race -cover -coverprofile=coverage.out $(pkg) || exit 1;\
 		tail -n +2 coverage.out >> coverage-all.out;)
 .PHONY: ci-test
 
