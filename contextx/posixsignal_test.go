@@ -11,19 +11,19 @@ import (
 )
 
 func TestContextCancellationWhenSignalsAreNotified(t *testing.T) {
-	assert := assert.New(t)
+	a := assert.New(t)
 
 	testCases := []struct {
 		signal      syscall.Signal
 		isCanceled  bool
 		description string
 	}{
+		{syscall.SIGINT, true, "SIGINT should cancel the context"},
 		{syscall.SIGHUP, false, "config signal handling does nothing, so context won't be canceled"},
 		{syscall.SIGWINCH, false, "this signal is not even handled, same thing than sighup"},
 	}
 
 	for _, testCase := range testCases {
-
 		finished := make(chan struct{})
 
 		runner := func() RunnerFunc {
@@ -44,9 +44,9 @@ func TestContextCancellationWhenSignalsAreNotified(t *testing.T) {
 		// wait till runner has finished running
 		select {
 		case <-finished:
-			assert.Equal(testCase.isCanceled, true, testCase.description)
+			a.Equal(testCase.isCanceled, true, testCase.description)
 		case <-time.After(10 * time.Millisecond):
-			assert.Equal(testCase.isCanceled, false, testCase.description)
+			a.Equal(testCase.isCanceled, false, testCase.description)
 		}
 	}
 }
