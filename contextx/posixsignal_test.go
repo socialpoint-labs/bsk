@@ -18,7 +18,6 @@ func TestContextCancellationWhenSignalsAreNotified(t *testing.T) {
 		isCanceled  bool
 		description string
 	}{
-		{syscall.SIGUSR1, true, "use SIGUSR1 instead of SIGKILL/SIGTERM otherwise the test process is killed"},
 		{syscall.SIGHUP, false, "config signal handling does nothing, so context won't be canceled"},
 		{syscall.SIGWINCH, false, "this signal is not even handled, same thing than sighup"},
 	}
