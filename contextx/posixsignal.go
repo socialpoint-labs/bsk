@@ -33,13 +33,13 @@ func signalsAdapter(c chan os.Signal) AdapterFunc {
 			// Bear in mind that SIGKILL and SIGSTOP cannot be trapped, see
 			// https://goo.gl/5gvRrN. Also know that pressing <ctrl-c> from CLI
 			// will make the process receive a SIGINT.
-			signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1, syscall.SIGHUP)
+			signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
 			for {
 				select {
 				case signal := <-c:
 					switch signal {
-					case syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1:
+					case syscall.SIGINT, syscall.SIGTERM:
 						cancel()
 
 						// TODO: How do we wait until everybody cancelled ?
