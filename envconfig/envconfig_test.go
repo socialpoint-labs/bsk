@@ -10,28 +10,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testEnv    = "test"
+	testPrefix = "myservice"
+)
+
 type testConfig struct {
 	Number int `required:"true"`
-	Var string
+	Var    string
 }
 
 func TestLoadConfig(t *testing.T) {
 	testCases := map[string]struct {
-		env    string
-		prefix    string
-		config testConfig
+		env      string
+		prefix   string
+		config   testConfig
 		expected testConfig
 	}{
 		"load config from an environment with its own .env file": {
-			env:    "test",
-			prefix:    "myservice",
-			config:    testConfig{},
+			env:      testEnv,
+			prefix:   testPrefix,
+			config:   testConfig{},
 			expected: testConfig{Number: 42, Var: "some_test_value"},
 		},
 		"load config from an environment without .env file": {
-			env:    "other_environment",
-			prefix:    "myservice",
-			config:    testConfig{},
+			env:      "other_environment",
+			prefix:   testPrefix,
+			config:   testConfig{},
 			expected: testConfig{Number: 42, Var: "some_value"},
 		},
 	}
@@ -60,8 +65,8 @@ func TestLoadConfig_FromEnvVars(t *testing.T) {
 	err := os.Setenv("MYSERVICE_NUMBER", fmt.Sprintf("%d", expectedNumber))
 	r.NoError(err)
 
-	env := "test"
-	prefix := "myservice"
+	env := testEnv
+	prefix := testPrefix
 	config := testConfig{}
 	expected := testConfig{
 		Number: expectedNumber,
@@ -80,8 +85,8 @@ func TestLoadConfig_Error(t *testing.T) {
 	a := assert.New(t)
 
 	path := "missing/path"
-	env := "test"
-	prefix := "myservice"
+	env := testEnv
+	prefix := testPrefix
 	config := testConfig{}
 
 	err := envconfig.LoadConfig(env, prefix, &config, envconfig.WithDotEnvPath(path))
@@ -94,8 +99,8 @@ func TestLoadConfig_Error(t *testing.T) {
 func TestMustLoadConfig(t *testing.T) {
 	a := assert.New(t)
 
-	env := "test"
-	prefix := "myservice"
+	env := testEnv
+	prefix := testPrefix
 	config := testConfig{}
 	expected := testConfig{
 		Number: 42,
@@ -113,14 +118,14 @@ func TestMustLoadConfig_Error(t *testing.T) {
 	a := assert.New(t)
 
 	path := "missing/path"
-	env := "test"
-	prefix := "myservice"
+	env := testEnv
+	prefix := testPrefix
 	config := testConfig{}
 
 	a.Panics(func() {
 		envconfig.MustLoadConfig(env, prefix, &config, envconfig.WithDotEnvPath(path))
 	})
-	
+
 	err := cleanEnvVars()
 	a.NoError(err)
 }

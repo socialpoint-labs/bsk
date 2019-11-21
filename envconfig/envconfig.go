@@ -1,7 +1,6 @@
 package envconfig
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -78,7 +77,7 @@ func loadEnvVars(path string, env string) error {
 	// - last: the one in _default.env
 	err := godotenv.Load(configFiles...)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Could not load the environment variables from file: %s", err.Error()))
+		return fmt.Errorf("could not load the environment variables from file: %s", err.Error())
 	}
 
 	return nil
