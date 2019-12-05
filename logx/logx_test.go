@@ -20,6 +20,7 @@ func TestDefaultAndLogstashLogging(t *testing.T) {
 	logstashLogger := logx.NewLogstash("mychan", "myprod", "myapp", logx.WriterOpt(rec), logx.WithoutTimeOpt())
 	logstashLoggerWithOriginalValues := logx.New(logx.MarshalerOpt(logx.NewLogstashMarshaler("mychan", "myprod", "myapp", logx.WithOriginalValueTypes())), logx.WriterOpt(rec), logx.WithoutTimeOpt())
 	logstashLoggerWithoutFileInfo := logx.NewLogstash("mychan", "myprod", "myapp", logx.WriterOpt(rec), logx.WithoutTimeOpt(), logx.WithoutFileInfo())
+	logstashLoggerWithEnvironment := logx.New(logx.MarshalerOpt(logx.NewLogstashMarshaler("mychan", "myprod", "myapp", logx.WithEnvironment("prod"))), logx.WriterOpt(rec), logx.WithoutTimeOpt())
 
 	hostname, _ := os.Hostname()
 
@@ -29,24 +30,25 @@ func TestDefaultAndLogstashLogging(t *testing.T) {
 		fields  []logx.Field
 		output  string
 	}{
-		{defaultLogger, "", nil, "DEBU  File: logx_test.go:54\n"},
-		{defaultLogger, "Test", nil, "DEBU Test File: logx_test.go:54\n"},
+		{defaultLogger, "", nil, "DEBU  File: logx_test.go:56\n"},
+		{defaultLogger, "Test", nil, "DEBU Test File: logx_test.go:56\n"},
 		{defaultLoggerWithoutFileInfo, "Test 2", []logx.Field{logx.F("foo", "some stuff")}, "DEBU Test 2 FIELDS foo=some stuff\n"},
 		// "type" is a logstash reserved keyword but just changes in logstash log
-		{defaultLogger, "Test 3", []logx.Field{logx.F("type", "val")}, "DEBU Test 3 FIELDS type=val File: logx_test.go:52\n"},
-		{defaultLogger, "Test 4", []logx.Field{logx.F("number", 111)}, "DEBU Test 4 FIELDS number=111 File: logx_test.go:52\n"},
+		{defaultLogger, "Test 3", []logx.Field{logx.F("type", "val")}, "DEBU Test 3 FIELDS type=val File: logx_test.go:54\n"},
+		{defaultLogger, "Test 4", []logx.Field{logx.F("number", 111)}, "DEBU Test 4 FIELDS number=111 File: logx_test.go:54\n"},
 		{defaultLoggerWithoutFileInfo, "Test 5", []logx.Field{logx.F("type", "val"), logx.F("myint", 111), logx.F("myfloat", 3.1416)}, "DEBU Test 5 FIELDS type=val myint=111 myfloat=3.1416\n"},
 
-		{logstashLogger, "", nil, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:54\",\"message\":\"\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
-		{logstashLogger, "Test", nil, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:54\",\"message\":\"Test\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
+		{logstashLogger, "", nil, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:56\",\"message\":\"\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
+		{logstashLogger, "Test", nil, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:56\",\"message\":\"Test\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
 		{logstashLoggerWithoutFileInfo, "Test 2", []logx.Field{logx.F("foo", "some stuff")}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"foo\":\"some stuff\",\"message\":\"Test 2\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
 		// "type" is a logstash reserved keyword but just changes in logstash log
-		{logstashLogger, "Test 3", []logx.Field{logx.F("type", "val")}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:52\",\"message\":\"Test 3\",\"product\":\"myprod\",\"severity\":\"DEBU\",\"typex\":\"val\"}\n", hostname)},
-		{logstashLogger, "Test 4", []logx.Field{logx.F("number", 111)}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:52\",\"message\":\"Test 4\",\"number\":\"111\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
+		{logstashLogger, "Test 3", []logx.Field{logx.F("type", "val")}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:54\",\"message\":\"Test 3\",\"product\":\"myprod\",\"severity\":\"DEBU\",\"typex\":\"val\"}\n", hostname)},
+		{logstashLogger, "Test 4", []logx.Field{logx.F("number", 111)}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:54\",\"message\":\"Test 4\",\"number\":\"111\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
 		{logstashLoggerWithoutFileInfo, "Test 5", []logx.Field{logx.F("type", "val"), logx.F("number", 111)}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"message\":\"Test 5\",\"number\":\"111\",\"product\":\"myprod\",\"severity\":\"DEBU\",\"typex\":\"val\"}\n", hostname)},
 
-		{logstashLoggerWithOriginalValues, "Test With Original Values But No Fields", nil, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:54\",\"message\":\"Test With Original Values But No Fields\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
-		{logstashLoggerWithOriginalValues, "Test With Original Values", []logx.Field{logx.F("string", "hi there"), logx.F("number", 123), logx.F("array", []int{1, 2, 3}), logx.F("map", map[string]int{"foo": 123, "bar": 456})}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"array\":[1,2,3],\"channel\":\"mychan\",\"file\":\"logx_test.go:52\",\"map\":{\"bar\":456,\"foo\":123},\"message\":\"Test With Original Values\",\"number\":123,\"product\":\"myprod\",\"severity\":\"DEBU\",\"string\":\"hi there\"}\n", hostname)},
+		{logstashLoggerWithOriginalValues, "Test With Original Values But No Fields", nil, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"file\":\"logx_test.go:56\",\"message\":\"Test With Original Values But No Fields\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
+		{logstashLoggerWithOriginalValues, "Test With Original Values", []logx.Field{logx.F("string", "hi there"), logx.F("number", 123), logx.F("array", []int{1, 2, 3}), logx.F("map", map[string]int{"foo": 123, "bar": 456})}, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"array\":[1,2,3],\"channel\":\"mychan\",\"file\":\"logx_test.go:54\",\"map\":{\"bar\":456,\"foo\":123},\"message\":\"Test With Original Values\",\"number\":123,\"product\":\"myprod\",\"severity\":\"DEBU\",\"string\":\"hi there\"}\n", hostname)},
+		{logstashLoggerWithEnvironment, "Test", nil, fmt.Sprintf("{\"@version\":1,\"app_server_name\":\"%s\",\"application\":\"myapp\",\"channel\":\"mychan\",\"environment\":\"prod\",\"file\":\"logx_test.go:56\",\"message\":\"Test\",\"product\":\"myprod\",\"severity\":\"DEBU\"}\n", hostname)},
 	} {
 		if tc.fields != nil {
 			tc.logger.Debug(tc.message, tc.fields...)
@@ -63,7 +65,7 @@ func TestLoggingWithCustomSkipLevel(t *testing.T) {
 	defaultLogger := logx.New(logx.WriterOpt(rec), logx.WithoutTimeOpt(), logx.AdditionalFileSkipLevel(1))
 
 	log(defaultLogger, "Test")
-	assert.Equal("DEBU Test File: logx_test.go:65\n", <-rec)
+	assert.Equal("DEBU Test File: logx_test.go:67\n", <-rec)
 }
 
 func log(logger logx.Logger, message string) {
