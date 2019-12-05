@@ -70,6 +70,7 @@ type LogstashMarshaler struct {
 	channel            string
 	product            string
 	application        string
+	environment        string
 	hostname           string
 	originalValueTypes bool
 }
@@ -82,6 +83,12 @@ type LogstashMarshalerOption func(*LogstashMarshaler)
 func WithOriginalValueTypes() LogstashMarshalerOption {
 	return func(l *LogstashMarshaler) {
 		l.originalValueTypes = true
+	}
+}
+
+func WithEnvironment(environment string) LogstashMarshalerOption {
+	return func(l *LogstashMarshaler) {
+		l.environment = environment
 	}
 }
 
@@ -116,6 +123,9 @@ func (l *LogstashMarshaler) Marshal(entry *entry) ([]byte, error) {
 	data["channel"] = l.channel
 	data["application"] = l.application
 	data["product"] = l.product
+	if l.environment != "" {
+		data["environment"] = l.environment
+	}
 	if entry.file != "" {
 		data["file"] = entry.file
 	}
