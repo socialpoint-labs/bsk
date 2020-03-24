@@ -7,6 +7,10 @@ import (
 
 // DataDogLambdaPublisher creates a publisher that sends metrics to the datadog-lambda-go library.
 //
+// All metrics reported will be submitted as distribution metrics (https://docs.datadoghq.com/metrics/distributions/).
+//
+// Submitting events is not supported.
+//
 // Callers will typically pass `ddlambda.Metric` in the `f` argument of the constructor. The func type is introduced to avoid adding a dependency with the DataDog library.
 //
 // The documentation and implementation of the DataDog library for Lambda can be found in https://github.com/DataDog/datadog-lambda-go
