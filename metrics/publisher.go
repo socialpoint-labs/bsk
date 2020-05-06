@@ -126,6 +126,8 @@ func NewDataDog(opts ...DatadogOption) *Publisher {
 }
 
 // NewDataDogLambda returns a publisher that satisfies DataDog metrics writing for AWS Lambda.
+//
+// Deprecated: use DataDogLambdaPublisher instead, that integrates with the DataDog Lambda Go library.
 func NewDataDogLambda() *Publisher {
 	return NewPublisher(os.Stdout, DataDogLambdaEncoder, FlushEvery3s, nil)
 }
