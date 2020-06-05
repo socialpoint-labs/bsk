@@ -55,6 +55,6 @@ func TestWithRequestResponseLogs(t *testing.T) {
 
 	a.NoError(err)
 	a.Equal(expected, resp)
-	a.Contains(w.String(), "request=my-request")
-	a.Contains(w.String(), "response=my-response")
+	a.Contains(w.String(), req)
+	a.Contains(w.String(), expected)
 }
