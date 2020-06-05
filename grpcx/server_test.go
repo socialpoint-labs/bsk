@@ -3,6 +3,7 @@ package grpcx_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/socialpoint-labs/bsk/grpcx"
@@ -43,8 +44,20 @@ func TestWithRequestResponseLogs(t *testing.T) {
 	l := logx.New(logx.WriterOpt(w))
 
 	ctx := context.Background()
-	req := "my-request"
-	expected := "my-response"
+	userID := "user-id"
+	req := struct {
+		UserID string
+	}{
+		UserID: userID,
+	}
+
+	result := "ok"
+	expected := struct {
+		Result string
+	}{
+		Result: result,
+	}
+
 	info := &grpc.UnaryServerInfo{FullMethod: "method"}
 	handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 		return expected, nil
@@ -55,6 +68,5 @@ func TestWithRequestResponseLogs(t *testing.T) {
 
 	a.NoError(err)
 	a.Equal(expected, resp)
-	a.Contains(w.String(), req)
-	a.Contains(w.String(), expected)
+	a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"}`, userID, result))
 }
