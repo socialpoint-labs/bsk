@@ -21,7 +21,8 @@ func TestWithMetrics(t *testing.T) {
 	ctx := context.Background()
 	req := "my-request"
 	expected := "my-response"
-	info := &grpc.UnaryServerInfo{FullMethod: "method"}
+	method := "method"
+	info := &grpc.UnaryServerInfo{FullMethod: method}
 	handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 		return expected, nil
 	})
@@ -32,8 +33,10 @@ func TestWithMetrics(t *testing.T) {
 	a.NoError(err)
 	a.Equal(expected, resp)
 
-	timer := m.Timer("grpc_request")
+	timer := m.Get("grpc.request_duration")
 	a.NotNil(timer)
+	a.Contains(timer.Tags(), metrics.NewTag("rpc_method", method))
+	a.Contains(timer.Tags(), metrics.NewTag("success", true))
 }
 
 func TestWithRequestResponseLogs(t *testing.T) {
