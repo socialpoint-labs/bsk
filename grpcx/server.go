@@ -17,9 +17,10 @@ func WithMetrics(m metrics.Metrics) grpc.UnaryServerInterceptor {
 		timer.Start()
 
 		resp, err := handler(ctx, req)
-		timer.WithTag("success", err == nil).Stop()
-
-		timer.Stop()
+		timer.
+			WithTag("rpc_method", info.FullMethod).
+			WithTag("success", err == nil).
+			Stop()
 
 		return resp, err
 	}
