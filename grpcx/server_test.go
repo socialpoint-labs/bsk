@@ -61,7 +61,8 @@ func TestWithRequestResponseLogs(t *testing.T) {
 		Result: result,
 	}
 
-	info := &grpc.UnaryServerInfo{FullMethod: "method"}
+	method := "method"
+	info := &grpc.UnaryServerInfo{FullMethod: method}
 	handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 		return expected, nil
 	})
@@ -71,5 +72,5 @@ func TestWithRequestResponseLogs(t *testing.T) {
 
 	a.NoError(err)
 	a.Equal(expected, resp)
-	a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"}`, userID, result))
+	a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"}`, method, userID, result))
 }
