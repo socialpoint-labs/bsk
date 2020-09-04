@@ -35,11 +35,20 @@ func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 		reqMsg, _ := json.Marshal(req)
 		respMsg, _ := json.Marshal(resp)
 
-		l.Info("gRPC Message",
-			logx.Field{Key: "ctx_full_method", Value: info.FullMethod},
-			logx.Field{Key: "ctx_request_content", Value: string(reqMsg)},
-			logx.Field{Key: "ctx_response_content", Value: string(respMsg)},
-		)
+		fields := []logx.Field{
+			{Key: "ctx_full_method", Value: info.FullMethod},
+			{Key: "ctx_request_content", Value: string(reqMsg)},
+			{Key: "ctx_response_content", Value: string(respMsg)},
+		}
+
+		if err != nil {
+			fields = append(fields, logx.Field{
+				Key:   "ctx_response_error",
+				Value: err.Error(),
+			})
+		}
+
+		l.Info("gRPC Message", fields...)
 
 		return resp, err
 	}
