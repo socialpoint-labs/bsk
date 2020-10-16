@@ -13,6 +13,11 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	method = "method"
+	userID = "user-id"
+)
+
 func TestWithMetrics(t *testing.T) {
 	a := assert.New(t)
 	t.Parallel()
@@ -21,7 +26,6 @@ func TestWithMetrics(t *testing.T) {
 	ctx := context.Background()
 	req := "my-request"
 	expected := "my-response"
-	method := "method"
 	info := &grpc.UnaryServerInfo{FullMethod: method}
 	handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 		return expected, nil
@@ -48,7 +52,6 @@ func TestWithRequestResponseLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		userID := "user-id"
 		req := struct {
 			UserID string
 		}{
@@ -62,7 +65,6 @@ func TestWithRequestResponseLogs(t *testing.T) {
 			Result: result,
 		}
 
-		method := "method"
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return expected, nil
@@ -81,7 +83,6 @@ func TestWithRequestResponseLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		userID := "user-id"
 		req := struct {
 			UserID string
 		}{
@@ -96,7 +97,6 @@ func TestWithRequestResponseLogs(t *testing.T) {
 		}
 		expectedErr := fmt.Errorf("some error")
 
-		method := "method"
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return expectedResponse, expectedErr
@@ -120,7 +120,6 @@ func TestWithErrorLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		userID := "user-id"
 		req := struct {
 			UserID string
 		}{
@@ -134,7 +133,6 @@ func TestWithErrorLogs(t *testing.T) {
 			Result: result,
 		}
 
-		method := "method"
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return expected, nil
@@ -153,7 +151,6 @@ func TestWithErrorLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		userID := "user-id"
 		req := struct {
 			UserID string
 		}{
@@ -168,7 +165,6 @@ func TestWithErrorLogs(t *testing.T) {
 		}
 		expectedErr := fmt.Errorf("some error")
 
-		method := "method"
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return expectedResponse, expectedErr
