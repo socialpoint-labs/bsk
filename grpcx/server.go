@@ -53,3 +53,26 @@ func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 		return resp, err
 	}
 }
+
+// WithErrorLogs returns a gRPC interceptor for unary calls that instrument requests
+// with logs for the errors.
+func WithErrorLogs(l logx.Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		resp, err := handler(ctx, req)
+
+		if err != nil {
+			reqMsg, _ := json.Marshal(req)
+			respMsg, _ := json.Marshal(resp)
+			fields := []logx.Field{
+				{Key: "url", Value: info.FullMethod},
+				{Key: "ctx_full_method", Value: info.FullMethod},
+				{Key: "ctx_request_content", Value: string(reqMsg)},
+				{Key: "ctx_response_content", Value: string(respMsg)},
+				{Key: "ctx_response_error", Value: err.Error()},
+			}
+			l.Info("gRPC Error", fields...)
+		}
+
+		return resp, err
+	}
+}
