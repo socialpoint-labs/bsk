@@ -65,10 +65,14 @@ func WithErrorLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 			respMsg, _ := json.Marshal(resp)
 			fields := []logx.Field{
 				{Key: "url", Value: info.FullMethod},
+				{Key: "grpc_method", Value: info.FullMethod},
 				{Key: "ctx_full_method", Value: info.FullMethod},
 				{Key: "ctx_request_content", Value: string(reqMsg)},
+				{Key: "ctxt_request_content", Value: string(reqMsg)},
 				{Key: "ctx_response_content", Value: string(respMsg)},
+				{Key: "ctxt_response_content", Value: string(respMsg)},
 				{Key: "ctx_response_error", Value: err.Error()},
+				{Key: "ctxt_exception", Value: err.Error()},
 			}
 			l.Info("gRPC Error", fields...)
 		}

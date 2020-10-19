@@ -175,6 +175,6 @@ func TestWithErrorLogs(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS url=%s ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, method, userID, result, expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS url=%s grpc_method=%s ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctxt_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctxt_response_content={"Result":"%s"} ctx_response_error=%s ctxt_exception=%s`, method, method, method, userID, userID, result, result, expectedErr.Error(), expectedErr.Error()))
 	})
 }
