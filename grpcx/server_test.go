@@ -13,6 +13,23 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	method   = "method"
+	userID   = "user-id"
+	okResult = "ok"
+)
+
+var exampleRequest = struct {
+	UserID string
+}{
+	UserID: userID,
+}
+var exampleResponse = struct {
+	Result string
+}{
+	Result: okResult,
+}
+
 func TestWithMetrics(t *testing.T) {
 	a := assert.New(t)
 	t.Parallel()
@@ -21,7 +38,6 @@ func TestWithMetrics(t *testing.T) {
 	ctx := context.Background()
 	req := "my-request"
 	expected := "my-response"
-	method := "method"
 	info := &grpc.UnaryServerInfo{FullMethod: method}
 	handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 		return expected, nil
@@ -43,60 +59,35 @@ func TestWithRequestResponseLogs(t *testing.T) {
 	t.Parallel()
 	a := assert.New(t)
 
-	t.Run("logs request and response", func(t *testing.T){
+	t.Run("logs request and response", func(t *testing.T) {
 		w := bytes.NewBufferString("")
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		userID := "user-id"
-		req := struct {
-			UserID string
-		}{
-			UserID: userID,
-		}
-
-		result := "ok"
-		expected := struct {
-			Result string
-		}{
-			Result: result,
-		}
-
-		method := "method"
+		req := exampleRequest
+		expectedResponse := exampleResponse
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return expected, nil
+			return expectedResponse, nil
 		})
 
 		interceptor := grpcx.WithRequestResponseLogs(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.NoError(err)
-		a.Equal(expected, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"}`, method, userID, result))
+		a.Equal(expectedResponse, resp)
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"}`, method, userID, okResult))
 	})
 
-	t.Run("logs the response error", func(t *testing.T){
+	t.Run("logs the response error", func(t *testing.T) {
 		w := bytes.NewBufferString("")
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		userID := "user-id"
-		req := struct {
-			UserID string
-		}{
-			UserID: userID,
-		}
-
-		result := "ok"
-		expectedResponse := struct {
-			Result string
-		}{
-			Result: result,
-		}
+		req := exampleRequest
+		expectedResponse := exampleResponse
 		expectedErr := fmt.Errorf("some error")
 
-		method := "method"
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return expectedResponse, expectedErr
@@ -107,6 +98,54 @@ func TestWithRequestResponseLogs(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, result, expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, okResult, expectedErr.Error()))
+	})
+}
+
+func TestWithErrorLogs(t *testing.T) {
+	t.Parallel()
+	a := assert.New(t)
+
+	t.Run("logs nothing if no error", func(t *testing.T) {
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+
+		ctx := context.Background()
+		req := exampleRequest
+		expectedResponse := exampleResponse
+
+		info := &grpc.UnaryServerInfo{FullMethod: method}
+		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return expectedResponse, nil
+		})
+
+		interceptor := grpcx.WithErrorLogs(l)
+		resp, err := interceptor(ctx, req, info, handler)
+
+		a.NoError(err)
+		a.Equal(expectedResponse, resp)
+		a.Equal("", w.String())
+	})
+
+	t.Run("logs error", func(t *testing.T) {
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+
+		ctx := context.Background()
+		req := exampleRequest
+		expectedResponse := exampleResponse
+		expectedErr := fmt.Errorf("some error")
+
+		info := &grpc.UnaryServerInfo{FullMethod: method}
+		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return expectedResponse, expectedErr
+		})
+
+		interceptor := grpcx.WithErrorLogs(l)
+		resp, err := interceptor(ctx, req, info, handler)
+
+		a.Error(err)
+		a.Equal(expectedResponse, resp)
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, okResult, expectedErr.Error()))
 	})
 }
