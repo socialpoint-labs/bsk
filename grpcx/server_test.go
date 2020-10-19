@@ -14,9 +14,21 @@ import (
 )
 
 const (
-	method = "method"
-	userID = "user-id"
+	method   = "method"
+	userID   = "user-id"
+	okResult = "ok"
 )
+
+var exampleRequest = struct {
+	UserID string
+}{
+	UserID: userID,
+}
+var exampleResponse = struct {
+	Result string
+}{
+	Result: okResult,
+}
 
 func TestWithMetrics(t *testing.T) {
 	a := assert.New(t)
@@ -52,30 +64,19 @@ func TestWithRequestResponseLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		req := struct {
-			UserID string
-		}{
-			UserID: userID,
-		}
-
-		result := "ok"
-		expected := struct {
-			Result string
-		}{
-			Result: result,
-		}
-
+		req := exampleRequest
+		expectedResponse := exampleResponse
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return expected, nil
+			return expectedResponse, nil
 		})
 
 		interceptor := grpcx.WithRequestResponseLogs(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.NoError(err)
-		a.Equal(expected, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"}`, method, userID, result))
+		a.Equal(expectedResponse, resp)
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"}`, method, userID, okResult))
 	})
 
 	t.Run("logs the response error", func(t *testing.T) {
@@ -83,18 +84,8 @@ func TestWithRequestResponseLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		req := struct {
-			UserID string
-		}{
-			UserID: userID,
-		}
-
-		result := "ok"
-		expectedResponse := struct {
-			Result string
-		}{
-			Result: result,
-		}
+		req := exampleRequest
+		expectedResponse := exampleResponse
 		expectedErr := fmt.Errorf("some error")
 
 		info := &grpc.UnaryServerInfo{FullMethod: method}
@@ -107,7 +98,7 @@ func TestWithRequestResponseLogs(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, result, expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, okResult, expectedErr.Error()))
 	})
 }
 
@@ -120,29 +111,19 @@ func TestWithErrorLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		req := struct {
-			UserID string
-		}{
-			UserID: userID,
-		}
-
-		result := "ok"
-		expected := struct {
-			Result string
-		}{
-			Result: result,
-		}
+		req := exampleRequest
+		expectedResponse := exampleResponse
 
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return expected, nil
+			return expectedResponse, nil
 		})
 
 		interceptor := grpcx.WithErrorLogs(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.NoError(err)
-		a.Equal(expected, resp)
+		a.Equal(expectedResponse, resp)
 		a.Equal("", w.String())
 	})
 
@@ -151,18 +132,8 @@ func TestWithErrorLogs(t *testing.T) {
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
-		req := struct {
-			UserID string
-		}{
-			UserID: userID,
-		}
-
-		result := "ok"
-		expectedResponse := struct {
-			Result string
-		}{
-			Result: result,
-		}
+		req := exampleRequest
+		expectedResponse := exampleResponse
 		expectedErr := fmt.Errorf("some error")
 
 		info := &grpc.UnaryServerInfo{FullMethod: method}
@@ -175,6 +146,6 @@ func TestWithErrorLogs(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, result, expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, okResult, expectedErr.Error()))
 	})
 }
