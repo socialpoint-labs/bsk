@@ -81,10 +81,10 @@ func WithErrorLogs(l logx.Logger, options ...func(*WithErrorLogsOptions)) grpc.U
 				{Key: "ctx_response_error_code", Value: errCode},
 				{Key: "ctx_response_error_message", Value: err.Error()},
 			}
-			if logOptions.hasDebugLevel(errCode) {
+			if inArray(errCode, logOptions.debugLevelCodes) {
 				l.Debug("gRPC Error", fields...)
 			}
-			if logOptions.hasInfoLevel(errCode) {
+			if inArray(errCode, logOptions.infoLevelCodes) {
 				l.Info("gRPC Error", fields...)
 			}
 		}
@@ -96,14 +96,6 @@ func WithErrorLogs(l logx.Logger, options ...func(*WithErrorLogsOptions)) grpc.U
 type WithErrorLogsOptions struct {
 	debugLevelCodes []codes.Code
 	infoLevelCodes  []codes.Code
-}
-
-func (o *WithErrorLogsOptions) hasDebugLevel(code codes.Code) bool {
-	return inArray(code, o.debugLevelCodes)
-}
-
-func (o *WithErrorLogsOptions) hasInfoLevel(code codes.Code) bool {
-	return inArray(code, o.infoLevelCodes)
 }
 
 func inArray(needle codes.Code, haystack []codes.Code) bool {
