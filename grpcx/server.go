@@ -108,14 +108,14 @@ func inCodeList(needle codes.Code, haystack []codes.Code) bool {
 	return false
 }
 
-func WithDebugLevelCodes(codes []codes.Code) func(*errorLogsOptions) {
+func WithDebugLevelCodes(codes ...codes.Code) func(*errorLogsOptions) {
 	return func(logsConfig *errorLogsOptions) {
-		logsConfig.debugLevelCodes = codes
+		logsConfig.debugLevelCodes = append(logsConfig.debugLevelCodes, codes...)
 	}
 }
 
-func WithDiscardedCodes(codes []codes.Code) func(*errorLogsOptions) {
+func WithDiscardedCodes(codes ...codes.Code) func(*errorLogsOptions) {
 	return func(logsConfig *errorLogsOptions) {
-		logsConfig.discardedCodes = codes
+		logsConfig.discardedCodes = append(logsConfig.discardedCodes, codes...)
 	}
 }

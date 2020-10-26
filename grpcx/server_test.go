@@ -136,7 +136,8 @@ func TestWithErrorLogs(t *testing.T) {
 		ctx := context.Background()
 		req := exampleRequest
 		expectedResponse := exampleResponse
-		expectedErr := status.Error(codes.Unknown, "some error")
+		expectedCode := codes.Unknown
+		expectedErr := status.Error(expectedCode, "some error")
 
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
@@ -148,7 +149,7 @@ func TestWithErrorLogs(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, status.Code(expectedErr), expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, expectedCode, expectedErr.Error()))
 	})
 
 	t.Run("logs error on debug level if custom options added", func(t *testing.T) {
@@ -158,20 +159,20 @@ func TestWithErrorLogs(t *testing.T) {
 		ctx := context.Background()
 		req := exampleRequest
 		expectedResponse := exampleResponse
-		expectedErr := status.Error(codes.NotFound, "some error")
+		expectedCode := codes.NotFound
+		expectedErr := status.Error(expectedCode, "some error")
 
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return expectedResponse, expectedErr
 		})
 
-		debugLevelCodes := []codes.Code{codes.NotFound}
-		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDebugLevelCodes(debugLevelCodes))
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDebugLevelCodes(expectedCode))
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`DEBU gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, status.Code(expectedErr), expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`DEBU gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, expectedCode, expectedErr.Error()))
 	})
 
 	t.Run("do not log error if discarded options added", func(t *testing.T) {
@@ -181,15 +182,15 @@ func TestWithErrorLogs(t *testing.T) {
 		ctx := context.Background()
 		req := exampleRequest
 		expectedResponse := exampleResponse
-		expectedErr := status.Error(codes.NotFound, "some error")
+		expectedCode := codes.NotFound
+		expectedErr := status.Error(expectedCode, "some error")
 
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
 			return expectedResponse, expectedErr
 		})
 
-		discardedCodes := []codes.Code{codes.NotFound}
-		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDiscardedCodes(discardedCodes))
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDiscardedCodes(expectedCode, codes.InvalidArgument, codes.AlreadyExists))
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
