@@ -118,3 +118,18 @@ func WithInfoLevelCodes(codes []codes.Code) func(*WithErrorLogsOptions) {
 		logsConfig.infoLevelCodes = codes
 	}
 }
+
+func WithoutLevelCodes(codes []codes.Code) func(*WithErrorLogsOptions) {
+	return func(logsConfig *WithErrorLogsOptions) {
+		removeCodesFromList(codes, logsConfig.debugLevelCodes)
+		removeCodesFromList(codes, logsConfig.infoLevelCodes)
+	}
+}
+
+func removeCodesFromList(itemsToRemove []codes.Code, list []codes.Code) {
+	for i, elem := range list {
+		if inArray(elem, itemsToRemove) {
+			list = append(list[:i], list[i+1:]...)
+		}
+	}
+}

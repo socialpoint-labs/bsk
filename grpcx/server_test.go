@@ -174,4 +174,27 @@ func TestWithErrorLogs(t *testing.T) {
 		a.Equal(expectedResponse, resp)
 		a.Contains(w.String(), fmt.Sprintf(`DEBU gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, status.Code(expectedErr), expectedErr.Error()))
 	})
+
+	t.Run("do not log error on if exclude options added", func(t *testing.T) {
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+
+		ctx := context.Background()
+		req := exampleRequest
+		expectedResponse := exampleResponse
+		expectedErr := status.Error(codes.NotFound, "some error")
+
+		info := &grpc.UnaryServerInfo{FullMethod: method}
+		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return expectedResponse, expectedErr
+		})
+
+		doNotLogLevelCodes := []codes.Code{codes.NotFound}
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithoutLevelCodes(doNotLogLevelCodes))
+		resp, err := interceptor(ctx, req, info, handler)
+
+		a.Error(err)
+		a.Equal(expectedResponse, resp)
+		a.Equal("", w.String())
+	})
 }
