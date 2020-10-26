@@ -167,7 +167,7 @@ func TestWithErrorLogs(t *testing.T) {
 
 		debugLevelCodes := []codes.Code{codes.NotFound}
 		infoLevelCodes := []codes.Code{codes.Unauthenticated}
-		interceptor := grpcx.WithErrorLogs(l, grpcx.SetDebugLevelCodes(debugLevelCodes), grpcx.SetInfoLevelCodes(infoLevelCodes))
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDebugLevelCodes(debugLevelCodes), grpcx.WithInfoLevelCodes(infoLevelCodes))
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)

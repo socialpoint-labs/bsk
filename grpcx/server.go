@@ -58,8 +58,8 @@ func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 
 // WithErrorLogs returns a gRPC interceptor for unary calls that instrument requests
 // with logs for the errors.
-func WithErrorLogs(l logx.Logger, options ...func(*withErrorLogsOptions)) grpc.UnaryServerInterceptor {
-	var logOptions = &withErrorLogsOptions{
+func WithErrorLogs(l logx.Logger, options ...func(*WithErrorLogsOptions)) grpc.UnaryServerInterceptor {
+	var logOptions = &WithErrorLogsOptions{
 		debugLevelCodes: []codes.Code{},
 		infoLevelCodes:  []codes.Code{codes.Canceled, codes.Unknown, codes.InvalidArgument, codes.DeadlineExceeded, codes.NotFound, codes.AlreadyExists, codes.PermissionDenied, codes.ResourceExhausted, codes.FailedPrecondition, codes.Aborted, codes.OutOfRange, codes.Unimplemented, codes.Internal, codes.Unavailable, codes.DataLoss, codes.Unauthenticated},
 	}
@@ -93,16 +93,16 @@ func WithErrorLogs(l logx.Logger, options ...func(*withErrorLogsOptions)) grpc.U
 	}
 }
 
-type withErrorLogsOptions struct {
+type WithErrorLogsOptions struct {
 	debugLevelCodes []codes.Code
 	infoLevelCodes  []codes.Code
 }
 
-func (o *withErrorLogsOptions) hasDebugLevel(code codes.Code) bool {
+func (o *WithErrorLogsOptions) hasDebugLevel(code codes.Code) bool {
 	return inArray(code, o.debugLevelCodes)
 }
 
-func (o *withErrorLogsOptions) hasInfoLevel(code codes.Code) bool {
+func (o *WithErrorLogsOptions) hasInfoLevel(code codes.Code) bool {
 	return inArray(code, o.infoLevelCodes)
 }
 
@@ -115,14 +115,14 @@ func inArray(needle codes.Code, haystack []codes.Code) bool {
 	return false
 }
 
-func SetDebugLevelCodes(codes []codes.Code) func(*withErrorLogsOptions) {
-	return func(logsConfig *withErrorLogsOptions) {
+func WithDebugLevelCodes(codes []codes.Code) func(*WithErrorLogsOptions) {
+	return func(logsConfig *WithErrorLogsOptions) {
 		logsConfig.debugLevelCodes = codes
 	}
 }
 
-func SetInfoLevelCodes(codes []codes.Code) func(*withErrorLogsOptions) {
-	return func(logsConfig *withErrorLogsOptions) {
+func WithInfoLevelCodes(codes []codes.Code) func(*WithErrorLogsOptions) {
+	return func(logsConfig *WithErrorLogsOptions) {
 		logsConfig.infoLevelCodes = codes
 	}
 }
