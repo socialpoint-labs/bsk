@@ -166,8 +166,7 @@ func TestWithErrorLogs(t *testing.T) {
 		})
 
 		debugLevelCodes := []codes.Code{codes.NotFound}
-		infoLevelCodes := []codes.Code{codes.Unauthenticated}
-		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDebugLevelCodes(debugLevelCodes), grpcx.WithInfoLevelCodes(infoLevelCodes))
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDebugLevelCodes(debugLevelCodes))
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
@@ -175,7 +174,7 @@ func TestWithErrorLogs(t *testing.T) {
 		a.Contains(w.String(), fmt.Sprintf(`DEBU gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, status.Code(expectedErr), expectedErr.Error()))
 	})
 
-	t.Run("do not log error on if exclude options added", func(t *testing.T) {
+	t.Run("do not log error if discarded options added", func(t *testing.T) {
 		w := bytes.NewBufferString("")
 		l := logx.New(logx.WriterOpt(w))
 
@@ -189,8 +188,8 @@ func TestWithErrorLogs(t *testing.T) {
 			return expectedResponse, expectedErr
 		})
 
-		doNotLogLevelCodes := []codes.Code{codes.NotFound}
-		interceptor := grpcx.WithErrorLogs(l, grpcx.WithoutLevelCodes(doNotLogLevelCodes))
+		discardedCodes := []codes.Code{codes.NotFound}
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDiscardedCodes(discardedCodes))
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)

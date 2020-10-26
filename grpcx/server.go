@@ -58,10 +58,10 @@ func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 
 // WithErrorLogs returns a gRPC interceptor for unary calls that instrument requests
 // with logs for the errors.
-func WithErrorLogs(l logx.Logger, options ...func(*WithErrorLogsOptions)) grpc.UnaryServerInterceptor {
-	var logOptions = &WithErrorLogsOptions{
+func WithErrorLogs(l logx.Logger, options ...WithErrorLogsOption) grpc.UnaryServerInterceptor {
+	var logOptions = &withErrorLogsOptions{
 		debugLevelCodes: []codes.Code{},
-		infoLevelCodes:  []codes.Code{codes.Canceled, codes.Unknown, codes.InvalidArgument, codes.DeadlineExceeded, codes.NotFound, codes.AlreadyExists, codes.PermissionDenied, codes.ResourceExhausted, codes.FailedPrecondition, codes.Aborted, codes.OutOfRange, codes.Unimplemented, codes.Internal, codes.Unavailable, codes.DataLoss, codes.Unauthenticated},
+		discardedCodes:  []codes.Code{},
 	}
 	for _, option := range options {
 		option(logOptions)
@@ -72,20 +72,21 @@ func WithErrorLogs(l logx.Logger, options ...func(*WithErrorLogsOptions)) grpc.U
 
 		if err != nil {
 			errCode := status.Code(err)
-			reqMsg, _ := json.Marshal(req)
-			respMsg, _ := json.Marshal(resp)
-			fields := []logx.Field{
-				{Key: "ctx_full_method", Value: info.FullMethod},
-				{Key: "ctx_request_content", Value: string(reqMsg)},
-				{Key: "ctx_response_content", Value: string(respMsg)},
-				{Key: "ctx_response_error_code", Value: errCode},
-				{Key: "ctx_response_error_message", Value: err.Error()},
-			}
-			if inArray(errCode, logOptions.debugLevelCodes) {
-				l.Debug("gRPC Error", fields...)
-			}
-			if inArray(errCode, logOptions.infoLevelCodes) {
-				l.Info("gRPC Error", fields...)
+			if !inCodeList(errCode, logOptions.discardedCodes) {
+				reqMsg, _ := json.Marshal(req)
+				respMsg, _ := json.Marshal(resp)
+				fields := []logx.Field{
+					{Key: "ctx_full_method", Value: info.FullMethod},
+					{Key: "ctx_request_content", Value: string(reqMsg)},
+					{Key: "ctx_response_content", Value: string(respMsg)},
+					{Key: "ctx_response_error_code", Value: errCode},
+					{Key: "ctx_response_error_message", Value: err.Error()},
+				}
+				if inCodeList(errCode, logOptions.debugLevelCodes) {
+					l.Debug("gRPC Error", fields...)
+				} else {
+					l.Info("gRPC Error", fields...)
+				}
 			}
 		}
 
@@ -93,12 +94,15 @@ func WithErrorLogs(l logx.Logger, options ...func(*WithErrorLogsOptions)) grpc.U
 	}
 }
 
-type WithErrorLogsOptions struct {
+// WithErrorLogsOption is the common type of functions that set withErrorLogsOptions
+type WithErrorLogsOption func(*withErrorLogsOptions)
+
+type withErrorLogsOptions struct {
 	debugLevelCodes []codes.Code
-	infoLevelCodes  []codes.Code
+	discardedCodes  []codes.Code
 }
 
-func inArray(needle codes.Code, haystack []codes.Code) bool {
+func inCodeList(needle codes.Code, haystack []codes.Code) bool {
 	for _, elem := range haystack {
 		if elem == needle {
 			return true
@@ -107,29 +111,14 @@ func inArray(needle codes.Code, haystack []codes.Code) bool {
 	return false
 }
 
-func WithDebugLevelCodes(codes []codes.Code) func(*WithErrorLogsOptions) {
-	return func(logsConfig *WithErrorLogsOptions) {
+func WithDebugLevelCodes(codes []codes.Code) func(*withErrorLogsOptions) {
+	return func(logsConfig *withErrorLogsOptions) {
 		logsConfig.debugLevelCodes = codes
 	}
 }
 
-func WithInfoLevelCodes(codes []codes.Code) func(*WithErrorLogsOptions) {
-	return func(logsConfig *WithErrorLogsOptions) {
-		logsConfig.infoLevelCodes = codes
-	}
-}
-
-func WithoutLevelCodes(codes []codes.Code) func(*WithErrorLogsOptions) {
-	return func(logsConfig *WithErrorLogsOptions) {
-		removeCodesFromList(codes, logsConfig.debugLevelCodes)
-		removeCodesFromList(codes, logsConfig.infoLevelCodes)
-	}
-}
-
-func removeCodesFromList(itemsToRemove []codes.Code, list []codes.Code) {
-	for i, elem := range list {
-		if inArray(elem, itemsToRemove) {
-			list = append(list[:i], list[i+1:]...)
-		}
+func WithDiscardedCodes(codes []codes.Code) func(*withErrorLogsOptions) {
+	return func(logsConfig *withErrorLogsOptions) {
+		logsConfig.discardedCodes = codes
 	}
 }
