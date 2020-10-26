@@ -58,11 +58,8 @@ func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 
 // WithErrorLogs returns a gRPC interceptor for unary calls that instrument requests
 // with logs for the errors.
-func WithErrorLogs(l logx.Logger, options ...WithErrorLogsOption) grpc.UnaryServerInterceptor {
-	var logOptions = &withErrorLogsOptions{
-		debugLevelCodes: []codes.Code{},
-		discardedCodes:  []codes.Code{},
-	}
+func WithErrorLogs(l logx.Logger, options ...ErrorLogsOption) grpc.UnaryServerInterceptor {
+	var logOptions = &errorLogsOptions{}
 	for _, option := range options {
 		option(logOptions)
 	}
@@ -94,10 +91,10 @@ func WithErrorLogs(l logx.Logger, options ...WithErrorLogsOption) grpc.UnaryServ
 	}
 }
 
-// WithErrorLogsOption is the common type of functions that set withErrorLogsOptions
-type WithErrorLogsOption func(*withErrorLogsOptions)
+// ErrorLogsOption is the common type of functions that set errorLogsOptions
+type ErrorLogsOption func(*errorLogsOptions)
 
-type withErrorLogsOptions struct {
+type errorLogsOptions struct {
 	debugLevelCodes []codes.Code
 	discardedCodes  []codes.Code
 }
@@ -111,14 +108,14 @@ func inCodeList(needle codes.Code, haystack []codes.Code) bool {
 	return false
 }
 
-func WithDebugLevelCodes(codes []codes.Code) func(*withErrorLogsOptions) {
-	return func(logsConfig *withErrorLogsOptions) {
+func WithDebugLevelCodes(codes []codes.Code) func(*errorLogsOptions) {
+	return func(logsConfig *errorLogsOptions) {
 		logsConfig.debugLevelCodes = codes
 	}
 }
 
-func WithDiscardedCodes(codes []codes.Code) func(*withErrorLogsOptions) {
-	return func(logsConfig *withErrorLogsOptions) {
+func WithDiscardedCodes(codes []codes.Code) func(*errorLogsOptions) {
+	return func(logsConfig *errorLogsOptions) {
 		logsConfig.discardedCodes = codes
 	}
 }
