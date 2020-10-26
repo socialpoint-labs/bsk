@@ -7,6 +7,8 @@ import (
 	"github.com/socialpoint-labs/bsk/logx"
 	"github.com/socialpoint-labs/bsk/metrics"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // WithMetrics returns a gRPC interceptor for unary calls that instrument requests
@@ -56,22 +58,64 @@ func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 
 // WithErrorLogs returns a gRPC interceptor for unary calls that instrument requests
 // with logs for the errors.
-func WithErrorLogs(l logx.Logger) grpc.UnaryServerInterceptor {
+func WithErrorLogs(l logx.Logger, options ...ErrorLogsOption) grpc.UnaryServerInterceptor {
+	var logOptions = &errorLogsOptions{}
+	for _, option := range options {
+		option(logOptions)
+	}
+
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		resp, err := handler(ctx, req)
 
 		if err != nil {
-			reqMsg, _ := json.Marshal(req)
-			respMsg, _ := json.Marshal(resp)
-			fields := []logx.Field{
-				{Key: "ctx_full_method", Value: info.FullMethod},
-				{Key: "ctx_request_content", Value: string(reqMsg)},
-				{Key: "ctx_response_content", Value: string(respMsg)},
-				{Key: "ctx_response_error", Value: err.Error()},
+			errCode := status.Code(err)
+			if !inCodeList(errCode, logOptions.discardedCodes) {
+				reqMsg, _ := json.Marshal(req)
+				respMsg, _ := json.Marshal(resp)
+				fields := []logx.Field{
+					{Key: "ctx_full_method", Value: info.FullMethod},
+					{Key: "ctx_request_content", Value: string(reqMsg)},
+					{Key: "ctx_response_content", Value: string(respMsg)},
+					{Key: "ctx_response_error_code", Value: errCode},
+					{Key: "ctx_response_error_message", Value: err.Error()},
+				}
+				if inCodeList(errCode, logOptions.debugLevelCodes) {
+					l.Debug("gRPC Error", fields...)
+				} else {
+					l.Info("gRPC Error", fields...)
+				}
 			}
-			l.Info("gRPC Error", fields...)
 		}
 
 		return resp, err
+	}
+}
+
+// ErrorLogsOption is the common type of functions that set errorLogsOptions
+type ErrorLogsOption func(*errorLogsOptions)
+
+type errorLogsOptions struct {
+	debugLevelCodes []codes.Code
+	discardedCodes  []codes.Code
+}
+
+func inCodeList(needle codes.Code, haystack []codes.Code) bool {
+	for _, elem := range haystack {
+		if elem == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func WithDebugLevelCodes(codes []codes.Code) func(*errorLogsOptions) {
+	return func(logsConfig *errorLogsOptions) {
+		logsConfig.debugLevelCodes = codes
+	}
+}
+
+func WithDiscardedCodes(codes []codes.Code) func(*errorLogsOptions) {
+	return func(logsConfig *errorLogsOptions) {
+		logsConfig.discardedCodes = codes
 	}
 }

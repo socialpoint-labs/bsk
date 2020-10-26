@@ -11,6 +11,8 @@ import (
 	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -127,14 +129,14 @@ func TestWithErrorLogs(t *testing.T) {
 		a.Equal("", w.String())
 	})
 
-	t.Run("logs error", func(t *testing.T) {
+	t.Run("logs error on info level with default options", func(t *testing.T) {
 		w := bytes.NewBufferString("")
 		l := logx.New(logx.WriterOpt(w))
 
 		ctx := context.Background()
 		req := exampleRequest
 		expectedResponse := exampleResponse
-		expectedErr := fmt.Errorf("some error")
+		expectedErr := status.Error(codes.Unknown, "some error")
 
 		info := &grpc.UnaryServerInfo{FullMethod: method}
 		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
@@ -146,6 +148,52 @@ func TestWithErrorLogs(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, okResult, expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, status.Code(expectedErr), expectedErr.Error()))
+	})
+
+	t.Run("logs error on debug level if custom options added", func(t *testing.T) {
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+
+		ctx := context.Background()
+		req := exampleRequest
+		expectedResponse := exampleResponse
+		expectedErr := status.Error(codes.NotFound, "some error")
+
+		info := &grpc.UnaryServerInfo{FullMethod: method}
+		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return expectedResponse, expectedErr
+		})
+
+		debugLevelCodes := []codes.Code{codes.NotFound}
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDebugLevelCodes(debugLevelCodes))
+		resp, err := interceptor(ctx, req, info, handler)
+
+		a.Error(err)
+		a.Equal(expectedResponse, resp)
+		a.Contains(w.String(), fmt.Sprintf(`DEBU gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, status.Code(expectedErr), expectedErr.Error()))
+	})
+
+	t.Run("do not log error if discarded options added", func(t *testing.T) {
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+
+		ctx := context.Background()
+		req := exampleRequest
+		expectedResponse := exampleResponse
+		expectedErr := status.Error(codes.NotFound, "some error")
+
+		info := &grpc.UnaryServerInfo{FullMethod: method}
+		handler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return expectedResponse, expectedErr
+		})
+
+		discardedCodes := []codes.Code{codes.NotFound}
+		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDiscardedCodes(discardedCodes))
+		resp, err := interceptor(ctx, req, info, handler)
+
+		a.Error(err)
+		a.Equal(expectedResponse, resp)
+		a.Equal("", w.String())
 	})
 }
