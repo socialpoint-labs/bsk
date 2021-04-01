@@ -6,6 +6,7 @@ import (
 
 	"github.com/socialpoint-labs/bsk/logx"
 	"github.com/socialpoint-labs/bsk/metrics"
+	"github.com/socialpoint-labs/bsk/recovery"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -117,5 +118,13 @@ func WithDebugLevelCodes(codes ...codes.Code) func(*errorLogsOptions) {
 func WithDiscardedCodes(codes ...codes.Code) func(*errorLogsOptions) {
 	return func(logsConfig *errorLogsOptions) {
 		logsConfig.discardedCodes = append(logsConfig.discardedCodes, codes...)
+	}
+}
+
+func WithStructuredPanicLogs(l logx.Logger, options ...recovery.Options) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		recoveryHandler := recovery.Handler(l, options...)
+		defer recoveryHandler()
+		return handler(ctx, req)
 	}
 }
