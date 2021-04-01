@@ -9,6 +9,7 @@ import (
 	"github.com/socialpoint-labs/bsk/grpcx"
 	"github.com/socialpoint-labs/bsk/logx"
 	"github.com/socialpoint-labs/bsk/metrics"
+	"github.com/socialpoint-labs/bsk/recovery"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -101,6 +102,28 @@ func TestWithRequestResponseLogs(t *testing.T) {
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
 		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Message FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error=%s`, method, userID, okResult, expectedErr.Error()))
+	})
+}
+
+func TestWithStructuredPanicLogs(t *testing.T) {
+	t.Parallel()
+	a := assert.New(t)
+
+	t.Run("panic handler works as expected", func (t *testing.T) {
+		reached := false
+		spyExitFunc := func() { reached = true }
+		interceptor := grpcx.WithStructuredPanicLogs(logx.NewDummy(), recovery.WithExitFunction(spyExitFunc))
+
+		ctx := context.Background()
+		info := &grpc.UnaryServerInfo{FullMethod: method}
+		panickingHandler := grpc.UnaryHandler(func(ctx context.Context, req interface{}) (interface{}, error) {
+			panic("test panicking")
+		})
+
+		_, err := interceptor(ctx, exampleRequest, info, panickingHandler)
+
+		a.NoError(err)
+		a.True(reached)
 	})
 }
 
