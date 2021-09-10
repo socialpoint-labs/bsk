@@ -109,7 +109,7 @@ func TestWithStructuredPanicLogs(t *testing.T) {
 	t.Parallel()
 	a := assert.New(t)
 
-	t.Run("panic handler works as expected", func (t *testing.T) {
+	t.Run("panic handler works as expected", func(t *testing.T) {
 		reached := false
 		spyExitFunc := func() { reached = true }
 		interceptor := grpcx.WithStructuredPanicLogs(logx.NewDummy(), recovery.WithExitFunction(spyExitFunc))
