@@ -37,3 +37,10 @@ install-tools:
 	go install golang.org/x/tools/cmd/goimports@latest
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v$(LINTER_VERSION)
 .PHONY: install-tools
+
+install-tools-ci:
+	go install github.com/GeertJohan/fgt@latest
+	go install golang.org/x/tools/cmd/cover@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+.PHONY: install-tools-ci
+
