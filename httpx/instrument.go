@@ -25,7 +25,8 @@ func InstrumentDecorator(met metrics.Metrics, t ...metrics.Tag) Decorator {
 
 			code := delegate.status
 
-			tags := append(t,
+			tags := t
+			tags = append(tags,
 				metrics.Tag{Key: "method", Value: strings.ToLower(r.Method)},
 				metrics.Tag{Key: "path", Value: r.URL.EscapedPath()},
 				metrics.Tag{Key: "code", Value: code},

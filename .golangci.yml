@@ -1,20 +1,19 @@
 linters:
-    enable:
-        - golint
-        - interfacer
-        - unconvert
-        - goconst
-        - maligned
-        - misspell
-        - prealloc
-        - gocritic
+  enable:
+    - revive
+    - unconvert
+    - goconst
+    - misspell
+    - prealloc
+    - gocritic
+    - govet
 
 linters-settings:
-    errcheck:
-        # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
-        # default is false: such cases aren't reported by default.
-        check-type-assertions: true
+  errcheck:
+    # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
+    # default is false: such cases aren't reported by default.
+    check-type-assertions: true
 
-    maligned:
-        # print struct with more effective memory layout or not, false by default
-        suggest-new: true
+  govet:
+    # report about shadowed variables
+    check-shadowing: true

@@ -2,7 +2,6 @@ package timex_test
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -29,8 +28,8 @@ func TestRunInterval(t *testing.T) {
 	t2 := <-ch
 	t3 := <-ch
 
-	assert.True(t1.Before(t2), fmt.Sprintf("t1 should be before t2"))
-	assert.True(t2.Before(t3), fmt.Sprintf("t2 should be before t3"))
+	assert.True(t1.Before(t2), "t1 should be before t2")
+	assert.True(t2.Before(t3), "t2 should be before t3")
 
 	assert.WithinDuration(t2, t1, 2*interval)
 	assert.WithinDuration(t3, t2, 2*interval)

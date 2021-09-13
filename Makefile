@@ -1,5 +1,5 @@
 PACKAGES=$(shell go list ./...)
-LINTER_VERSION=1.18.0
+LINTER_VERSION=1.42.1
 
 lint:
 	goimports -w .
@@ -10,6 +10,10 @@ lint:
 test:
 	GORACE="halt_on_error=1" go test -race ./...
 .PHONY: test
+
+test-integration:
+	GORACE="halt_on_error=1" go test -tags=integration -race ./...
+.PHONY: test-integration
 
 ci-lint:
 	fgt goimports -l .
@@ -28,8 +32,8 @@ ci-check: ci-lint ci-test
 .PHONY: ci-check
 
 install-tools:
-	go get -u github.com/GeertJohan/fgt
-	go get -u golang.org/x/tools/cmd/cover
-	go get -u golang.org/x/tools/cmd/goimports
+	go install github.com/GeertJohan/fgt@latest
+	go install golang.org/x/tools/cmd/cover@latest
+	go install golang.org/x/tools/cmd/goimports@latest
 	curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(GOPATH)/bin v$(LINTER_VERSION)
 .PHONY: install-tools
