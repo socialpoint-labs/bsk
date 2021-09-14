@@ -44,3 +44,43 @@ install-tools-ci:
 	go install golang.org/x/tools/cmd/goimports@latest
 .PHONY: install-tools-ci
 
+### Docker ###
+up:
+	docker-compose up --remove-orphans
+.PHONY: up
+
+up-build:
+	docker-compose up --remove-orphans --build
+.PHONY: up-build
+
+up-daemon:
+	docker-compose up --remove-orphans -d
+.PHONY: up-daemon
+
+down:
+	docker-compose down -v
+.PHONY: down
+
+ps:
+	docker-compose ps
+.PHONY: ps
+
+logs:
+	docker-compose logs -f sem-pvp
+.PHONY: logs
+
+restart:
+	docker-compose restart sem-pvp
+.PHONY: restart
+
+bash:
+	docker-compose exec sem-pvp bash
+.PHONY: bash
+
+docker-check:
+	docker-compose exec sem-pvp bash -c "make check"
+.PHONY: docker-check
+
+docker-ci-test:
+	docker-compose exec -T sem-pvp bash -c "make ci-test"
+.PHONY: docker-ci-test
