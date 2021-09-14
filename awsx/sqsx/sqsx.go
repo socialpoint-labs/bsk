@@ -3,6 +3,7 @@ package sqsx
 import (
 	"context"
 	"errors"
+	"math"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -36,6 +37,22 @@ func ReceiveMessage(ctx context.Context, cli sqsiface.SQSAPI, url string, visibi
 	}
 
 	return output.Messages[0], nil
+}
+
+// ReceiveMessageWithRetries get a message from the queue with an exponential backoff for retries.
+func ReceiveMessageWithRetries(ctx context.Context, cli sqsiface.SQSAPI, url string, visibilityTimeout, waitTime time.Duration, maxRetries int) (*sqs.Message, error) {
+	retries := 0
+
+	msg, err := ReceiveMessage(ctx, cli, url, visibilityTimeout, waitTime)
+	for err != nil && retries < maxRetries {
+		sleepTime := time.Duration(math.Pow(2, float64(retries))*100) * time.Millisecond
+		time.Sleep(sleepTime)
+
+		retries++
+		msg, err = ReceiveMessage(ctx, cli, url, visibilityTimeout, waitTime)
+	}
+
+	return msg, err
 }
 
 // SendMessage delivers a message to the specified queue

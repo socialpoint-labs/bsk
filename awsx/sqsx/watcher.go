@@ -21,6 +21,13 @@ func WatchRunner(cli sqsiface.SQSAPI, url string, f OnMessage, e OnError) contex
 	})
 }
 
+// WatchRunnerWithRetries returns a runner that watch a queue, using the runner's context
+func WatchRunnerWithRetries(cli sqsiface.SQSAPI, url string, f OnMessage, e OnError, retries int) contextx.Runner {
+	return contextx.RunnerFunc(func(ctx context.Context) {
+		WatchWithRetries(ctx, cli, url, f, e, retries)
+	})
+}
+
 // Watch watches a queue a call the callback function on messages or errors
 //
 // Deprecated: use WatchWithRetries instead
@@ -54,6 +61,49 @@ func Watch(ctx context.Context, cli sqsiface.SQSAPI, url string, f OnMessage, e 
 				if _, errChange := ChangeMsgVisibilityTimeout(ctx, cli, url, msg.ReceiptHandle, 0); errChange != nil {
 					e(errChange)
 				}
+
+				continue
+			}
+
+			err = DeleteMessage(ctx, msg.ReceiptHandle, cli, url)
+			if err != nil {
+				// There was an error removing the message from the queue, so probably the message
+				// is still in the queue and will receive it again (although we will never know),
+				// so be prepared to process the message again without side effects.
+				e(err)
+				continue
+			}
+		}
+	}
+}
+
+// WatchWithRetries watches a queue a call the callback function on messages or errors
+func WatchWithRetries(ctx context.Context, cli sqsiface.SQSAPI, url string, f OnMessage, e OnError, retries int) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		default:
+			msg, err := ReceiveMessage(ctx, cli, url, 300, 20)
+			if err != nil {
+				// We exceeded the maximum number of retries after exponential backoff
+				e(err)
+
+				continue
+			}
+
+			if msg == nil {
+				// There were no messages in the queue, let's try again
+				// No need to sleep, because internally the SDK does long-polling
+				continue
+			}
+
+			err = f(msg)
+
+			if err != nil {
+				// If the callback function returns an error, leave the message in the queue
+				e(err)
 
 				continue
 			}

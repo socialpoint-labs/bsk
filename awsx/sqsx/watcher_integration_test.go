@@ -1,6 +1,3 @@
-//go:build integration
-// +build integration
-
 package sqsx_test
 
 import (
@@ -42,6 +39,37 @@ func TestWatch(t *testing.T) {
 	received := <-messages
 
 	a.Equal(payload, *received.Body)
+
+	cancel()
+}
+
+func TestWatchWithRetries(t *testing.T) {
+	assert := assert.New(t)
+
+	payload := "test2"
+	url := getTestQueue(t)
+	sendMessage(t, url, payload)
+
+	messages := make(chan *sqs.Message)
+
+	session := awstest.NewSession()
+	cli := sqs.New(session)
+
+	f := func(msg *sqs.Message) error {
+		messages <- msg
+		return nil
+	}
+
+	e := func(err error) {}
+
+	runner := sqsx.WatchRunnerWithRetries(cli, url, f, e, 1)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go runner.Run(ctx)
+
+	received := <-messages
+
+	assert.Equal(payload, *received.Body)
 
 	cancel()
 }

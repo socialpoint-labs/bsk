@@ -1,6 +1,3 @@
-//go:build integration
-// +build integration
-
 package sqsx_test
 
 import (
@@ -31,6 +28,21 @@ func Test_Send_And_Receive(t *testing.T) {
 	a.Equal(payload, *msg.Body)
 }
 
+func Test_Send_And_Receive_WithRetries(t *testing.T) {
+	a := assert.New(t)
+	url := setupQueue(t, a)
+	sess := awstest.NewSession()
+
+	_, err := sqsx.SendMessage(context.Background(), sqs.New(sess), url, payload)
+	a.NoError(err)
+
+	msg, err := sqsx.ReceiveMessageWithRetries(context.Background(), sqs.New(awstest.NewSession()), url, 2, 2, 1)
+	a.NoError(err)
+
+	a.NotNil(msg)
+	a.Equal(payload, *msg.Body)
+}
+
 func Test_Delete(t *testing.T) {
 	a := assert.New(t)
 	url := setupQueue(t, a)
@@ -50,6 +62,26 @@ func Test_Delete(t *testing.T) {
 	a.NoError(err)
 }
 
+func Test_Delete_WithRetries(t *testing.T) {
+	a := assert.New(t)
+	url := setupQueue(t, a)
+	sess := awstest.NewSession()
+	cli := sqs.New(sess)
+	ctx := context.Background()
+
+	_, err := sqsx.SendMessage(ctx, cli, url, payload)
+	a.NoError(err)
+
+	msg, err := sqsx.ReceiveMessageWithRetries(context.Background(), cli, url, 2, 2, 1)
+	a.NoError(err)
+
+	a.NotNil(msg)
+	a.Equal(payload, *msg.Body)
+
+	err = sqsx.DeleteMessage(ctx, msg.ReceiptHandle, cli, url)
+	a.NoError(err)
+}
+
 func Test_ChangeMsgVisibilityTimeout(t *testing.T) {
 	a := assert.New(t)
 	url := setupQueue(t, a)
@@ -60,6 +92,24 @@ func Test_ChangeMsgVisibilityTimeout(t *testing.T) {
 	a.NoError(err)
 
 	msg, err := sqsx.ReceiveMessage(context.Background(), cli, url, 300, 2)
+	a.NoError(err)
+	a.NotNil(msg)
+	a.Equal(payload, *msg.Body)
+
+	_, err = sqsx.ChangeMsgVisibilityTimeout(context.Background(), cli, url, msg.ReceiptHandle, 0)
+	a.NoError(err)
+}
+
+func Test_ChangeMsgVisibilityTimeoutWithRetries_WithRetries(t *testing.T) {
+	a := assert.New(t)
+	url := setupQueue(t, a)
+	sess := awstest.NewSession()
+	cli := sqs.New(sess)
+
+	_, err := sqsx.SendMessage(context.Background(), cli, url, payload)
+	a.NoError(err)
+
+	msg, err := sqsx.ReceiveMessageWithRetries(context.Background(), cli, url, 300, 2, 1)
 	a.NoError(err)
 	a.NotNil(msg)
 	a.Equal(payload, *msg.Body)
@@ -121,6 +171,50 @@ func Test_Send_And_Receive_From_FIFO(t *testing.T) {
 
 	// Duplicated message is not found
 	msg, err = sqsx.ReceiveMessage(context.Background(), cli, url, 2, 2)
+	a.NoError(err)
+	a.Nil(msg)
+}
+
+func Test_Send_And_Receive_From_FIFO_WithRetries(t *testing.T) {
+	a := assert.New(t)
+	url := setupFIFOQueue(t, a)
+	sess := awstest.NewSession()
+	cli := sqs.New(sess)
+
+	payloadA := "payloadA"
+	payloadB := "payloadB"
+	group := "group"
+	id1 := "1"
+	id2 := "2"
+
+	_, err := sqsx.SendFIFOMessage(context.Background(), cli, url, payloadA, group, id1)
+	a.NoError(err)
+
+	_, err = sqsx.SendFIFOMessage(context.Background(), cli, url, payloadB, group, id2)
+	a.NoError(err)
+
+	// Publish with the same deduplicationID -> message is not stored in the queue
+	_, err = sqsx.SendFIFOMessage(context.Background(), cli, url, payloadB, group, id2)
+	a.NoError(err)
+
+	msg, err := sqsx.ReceiveMessageWithRetries(context.Background(), cli, url, 2, 2, 1)
+	a.NoError(err)
+	a.NotNil(msg)
+
+	a.Equal(payloadA, *msg.Body)
+	err = sqsx.DeleteMessage(context.Background(), msg.ReceiptHandle, cli, url)
+	a.NoError(err)
+
+	msg, err = sqsx.ReceiveMessageWithRetries(context.Background(), cli, url, 2, 2, 1)
+	a.NoError(err)
+	a.NotNil(msg)
+
+	a.Equal(payloadB, *msg.Body)
+	err = sqsx.DeleteMessage(context.Background(), msg.ReceiptHandle, cli, url)
+	a.NoError(err)
+
+	// Duplicated message is not found
+	msg, err = sqsx.ReceiveMessageWithRetries(context.Background(), cli, url, 2, 2, 1)
 	a.NoError(err)
 	a.Nil(msg)
 }
