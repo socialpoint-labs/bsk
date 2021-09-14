@@ -44,3 +44,10 @@ install-tools-ci:
 	go install golang.org/x/tools/cmd/goimports@latest
 .PHONY: install-tools-ci
 
+up-daemon:
+	docker-compose run --rm starter
+.PHONY: up-daemon
+
+docker-ci-test:
+	docker-compose exec -T bsk /bin/bash -c 'make ci-test'
+.PHONY: docker-ci-check
