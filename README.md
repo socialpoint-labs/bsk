@@ -4,20 +4,32 @@
 
 ## Packages
 
-There are two types of packages: 
-- `ext`: extensions to the stdlib, they augment stdlib package functionalities.
-  Usually named after a stdlib package name plus `x`.
-- `new`: they provide logic not present in the stdlib.
+### Extensions
 
-| Package                    | Type  | Description                                                                       |
-| ---                        | ----  | -----------                                                                       |
-| [`httpx`](httpx)           | `ext` | Extends `net/http` with routing utilities, decorators, etc                        |
-| [`logx`](logx)             | `ext` | Extends `log` with structured logging and logstash support                        |
-| [`contextx`](contextx)     | `ext` | Extends `context` with types and decorators to run tasks with a `context.Context` |
-| [`timex`](timex)           | `ext` | Extends `time` with other time functions and utilities                            |
-| [`metrics`](metrics)       | `new` | Adds metrics to instrument and publish to e.g DataDog                             |
-| [`dispatcher`](dispatcher) | `new` | Adds a reflect-based framework for dispatching events.                            |
-| [`netutil`](netutil)       | `new` | Provides functions to get free TCP and UDP ports.                                 |
+Extensions are packages tha extends other packages from the standard library or from an official package.
+
+| Package | Description|
+| --- | --- |
+| [`awsx`](awsx)         | Extends package `github.com/aws/aws-sdk-go` with testing utilities and easier to use helpers. |
+| [`contextx`](contextx) | Extends `context` with types and decorators to run tasks with a `context.Context` |
+| [`grpcx`](grpcx)       | Extends package `google.golang.org/grpc` with interceptors |
+| [`httpx`](httpx)       | Extends package `net/http` with routing utilities, decorators, etc... |
+| [`logx`](logx)         | Extends `log` with structured logging and logstash support |
+| [`timex`](timex)       | Extends `time` with other time functions and utilities |
+
+### Utilities
+
+Utilities are general purpose packages that provides specific functionalities.
+
+| Package | Description |
+| --- | --- |
+| [`dispatcher`](dispatcher) | Adds a reflect-based framework for dispatching events |
+| [`metrics`](metrics)       | Adds metrics to instrument and publish to e.g DataDog |
+| [`multierror`](multierror) | Allows piling multiple errors in a single error object |
+| [`netutil`](netutil)       | Net utilities to get free network ports |
+| [`recovery`](recovery)     | Offers panic recovery utils |
+| [`run`](run)               | Functions to manage runtime execution flow |
+| [`uuid`](uuid)             | An utility package to generate time-ordered UUIDs |
 
 ## Contributors
 
@@ -27,7 +39,7 @@ It's a collaborative effort of all the backend team!
 
 In order to simplify the process of moving the code to a public repository, original commits authors' could be lost.
 
-Special thanks to all the people who has been collaborating (in alphabetical order):
+Special thanks to all the people who have collaborated (in alphabetical order):
 
 - [Adán Lobato](https://github.com/adanlobato)
 - [Alex Carol](https://github.com/alexcarol)
