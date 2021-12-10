@@ -21,10 +21,10 @@ func ReceiveMessage(ctx context.Context, cli sqsiface.SQSAPI, url string, opts .
 		opt(options)
 	}
 	if options.visibilityTimeout != nil {
-		input.SetVisibilityTimeout(int64(*options.visibilityTimeout))
+		input.SetVisibilityTimeout(int64(options.visibilityTimeout.Seconds()))
 	}
 	if options.waitTime != nil {
-		input.SetWaitTimeSeconds(int64(*options.waitTime))
+		input.SetWaitTimeSeconds(int64(options.waitTime.Seconds()))
 	}
 
 	output, err := cli.ReceiveMessageWithContext(ctx, input)
