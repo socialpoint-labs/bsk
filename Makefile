@@ -66,21 +66,21 @@ ps:
 .PHONY: ps
 
 logs:
-	docker-compose logs -f sem-pvp
+	docker-compose logs -f bsk
 .PHONY: logs
 
 restart:
-	docker-compose restart sem-pvp
+	docker-compose restart bsk
 .PHONY: restart
 
 bash:
-	docker-compose exec sem-pvp bash
+	docker-compose exec bsk bash
 .PHONY: bash
 
 docker-check:
-	docker-compose exec sem-pvp bash -c "make check"
+	docker-compose exec bsk bash -c "make check"
 .PHONY: docker-check
 
 docker-ci-test:
-	docker-compose exec -T sem-pvp bash -c "make ci-test"
+	docker-compose exec -T bsk bash -c "make ci-test"
 .PHONY: docker-ci-test
