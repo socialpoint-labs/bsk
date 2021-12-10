@@ -46,4 +46,5 @@ jobs:
       - name: Run integration tests
         run: |
           make up-daemon
+          while [[ `docker-compose ps -q starter | xargs docker inspect -f '{{ .State.Status }}'` != 'exited' ]]; do echo -n "."; sleep 1; done
           make docker-ci-test
