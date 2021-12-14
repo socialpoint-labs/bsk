@@ -43,6 +43,8 @@ jobs:
         uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8 # v2.1.3
         with:
           go-version: ${{ env.GO_VERSION }}
+      - name: Up
+        uses: ./.github/actions/up
       - name: Run integration tests
         run: |
-          make ci-test
+          make docker-ci-test

@@ -17,8 +17,8 @@ func init() {
 // these are words that are used by logstash so we have to change its name when
 // they are processed.
 var reservedWords = map[string]struct{}{
-	"error": struct{}{},
-	"type":  struct{}{},
+	"error": {},
+	"type":  {},
 }
 
 // Marshaler defines the method to marshal entries

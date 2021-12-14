@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  starter:
+    image: dadarek/wait-for-dependencies
+    command: bsk:8080
+    environment:
+      - SLEEP_LENGTH=5
+      - TIMEOUT_LENGTH=300
+    depends_on:
+      - bsk
+      - localstack
+
+  bsk:
+    image: golang:${GO_VERSION-1.17}
+    depends_on:
+      - localstack
+    volumes:
+      - .:/code
+      - go-modules:/go/pkg/mod
+    working_dir: /code
+    command: >
+      bash -c "./docker_run.sh"
+    environment:
+      AWS_ACCESS_KEY_ID: x
+      AWS_SECRET_ACCESS_KEY: x
+      SP_BSK_AWS_ENDPOINT: http://localstack:4566
+
+  localstack:
+    image: localstack/localstack:0.13.1
+    ports:
+      - "4566-4599:4566-4599"
+      - "8080:${PORT_WEB_UI-8080}"
+    environment:
+      HOSTNAME: localstack
+      HOSTNAME_EXTERNAL: localstack
+      SERVICES: dynamodb,kms,s3,sqs,kinesis
+      DEFAULT_REGION: us-east-1
+    healthcheck:
+      test: nc -z localhost 4566
+      interval: 5s
+      timeout: 1s
+      retries: 10
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "localstack:/tmp/localstack"
+
+volumes:
+  localstack:
+  go-modules:
