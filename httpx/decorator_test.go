@@ -1,13 +1,12 @@
 package httpx_test
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"fmt"
-	"io"
 	"time"
 
 	"github.com/socialpoint-labs/bsk/httpx"

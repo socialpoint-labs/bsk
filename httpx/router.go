@@ -1,11 +1,9 @@
 package httpx
 
 import (
-	"net/http"
-
-	"strings"
-
 	"context"
+	"net/http"
+	"strings"
 )
 
 // NewRouter returns a new Router struct

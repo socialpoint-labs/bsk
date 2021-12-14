@@ -1,3 +1,7 @@
+run:
+  build-tags:
+    - integration
+
 linters:
   enable:
     - revive
@@ -7,6 +11,11 @@ linters:
     - prealloc
     - gocritic
     - govet
+    - deadcode
+    - gci
+    - importas
+    - goimports
+    - gofmt
 
 linters-settings:
   errcheck:

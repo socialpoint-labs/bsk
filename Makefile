@@ -1,10 +1,10 @@
 PACKAGES=$(shell go list ./...)
-LINTER_VERSION=1.42.1
+LINTER_VERSION=1.43.0
 
 lint:
 	goimports -w .
 	go mod verify
-	golangci-lint run
+	golangci-lint run --fix
 .PHONY: lint
 
 test:
