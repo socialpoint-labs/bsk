@@ -132,7 +132,7 @@ func Test_Send_And_Receive_From_FIFO(t *testing.T) {
 }
 
 func arrangeQueue(t *testing.T) string {
-	queue := awstest.CreateResource(t, sqs.ServiceName)
+	queue := awstest.CreateResource(sqs.ServiceName)
 	awstest.AssertResourceExists(t, queue, sqs.ServiceName)
 
 	sess := awstest.NewSession()
@@ -145,7 +145,7 @@ func arrangeQueue(t *testing.T) string {
 }
 
 func arrangeFIFOQueue(t *testing.T) string {
-	queue := awstest.CreateResource(t, awstest.SQSFifoServiceName)
+	queue := awstest.CreateResource(awstest.SQSFifoServiceName)
 	awstest.AssertResourceExists(t, queue, awstest.SQSFifoServiceName)
 
 	sess := awstest.NewSession()

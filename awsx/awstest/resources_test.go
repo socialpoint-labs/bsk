@@ -24,14 +24,14 @@ var resourceTypes = []string{
 
 func TestCreateResource(t *testing.T) {
 	for _, res := range resourceTypes {
-		awstest.AssertResourceExists(t, awstest.CreateResource(t, res), res)
+		awstest.AssertResourceExists(t, awstest.CreateResource(res), res)
 	}
 }
 
 func TestKMSAliasCreatedForResource(t *testing.T) {
 	a := assert.New(t)
 
-	keyID := awstest.CreateResource(t, kms.ServiceName)
+	keyID := awstest.CreateResource(kms.ServiceName)
 
 	svc := kms.New(awstest.NewSession())
 	res, err := svc.ListAliases(&kms.ListAliasesInput{Limit: aws.Int64(100)})

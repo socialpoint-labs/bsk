@@ -35,10 +35,10 @@ type kinesisResourceService struct{}
 
 // ResourceService isolates creation and checking existence by session for each supported resource
 type ResourceService interface {
-	// CreateResourceForSession creates a resource for testing purpouses
-	CreateResourceForSession(t *testing.T, sess *session.Session, name *string) (*string, error)
+	// CreateResourceForSession creates a resource for testing purposes
+	CreateResourceForSession(sess *session.Session, name *string) (*string, error)
 	// AssertResourceExistsForSession check if a resource exists for a given session
-	AssertResourceExistsForSession(t *testing.T, sess *session.Session, name *string) (bool, error)
+	AssertResourceExistsForSession(sess *session.Session, name *string) (bool, error)
 }
 
 // Map for getting ResourceService by name
@@ -92,12 +92,12 @@ func Endpoint() string {
 }
 
 // CreateResource creates an AWS resource for testing purposes
-func CreateResource(t *testing.T, r string) *string {
+func CreateResource(r string) *string {
 	name := aws.String("integration-test-" + uuid.New())
 
 	resource := GetResourceServiceByName(r)
 	sess := NewSession()
-	name, err := resource.CreateResourceForSession(t, sess, name)
+	name, err := resource.CreateResourceForSession(sess, name)
 	if err != nil {
 		log.Panicf("Error %v creating resource %q", err, r)
 	}
@@ -109,7 +109,7 @@ func CreateResource(t *testing.T, r string) *string {
 func AssertResourceExists(t *testing.T, name *string, r string) bool {
 	resource := GetResourceServiceByName(r)
 	sess := NewSession()
-	response, err := resource.AssertResourceExistsForSession(t, sess, name)
+	response, err := resource.AssertResourceExistsForSession(sess, name)
 	if err != nil {
 		t.Errorf("Error %v checking resource %v", err, r)
 	}
@@ -117,7 +117,7 @@ func AssertResourceExists(t *testing.T, name *string, r string) bool {
 	return response
 }
 
-func (s3ResourceService) CreateResourceForSession(t *testing.T, sess *session.Session, name *string) (*string, error) {
+func (s3ResourceService) CreateResourceForSession(sess *session.Session, name *string) (*string, error) {
 	svc := s3.New(sess)
 
 	input := &s3.CreateBucketInput{Bucket: name}
@@ -126,7 +126,7 @@ func (s3ResourceService) CreateResourceForSession(t *testing.T, sess *session.Se
 	return name, err
 }
 
-func (s3ResourceService) AssertResourceExistsForSession(t *testing.T, sess *session.Session, name *string) (bool, error) {
+func (s3ResourceService) AssertResourceExistsForSession(sess *session.Session, name *string) (bool, error) {
 	svc := s3.New(sess)
 
 	input := &s3.HeadBucketInput{Bucket: name}
@@ -135,7 +135,7 @@ func (s3ResourceService) AssertResourceExistsForSession(t *testing.T, sess *sess
 	return err == nil, err
 }
 
-func (sqsResourceService) CreateResourceForSession(t *testing.T, sess *session.Session, name *string) (*string, error) {
+func (sqsResourceService) CreateResourceForSession(sess *session.Session, name *string) (*string, error) {
 	svc := sqs.New(sess)
 
 	input := &sqs.CreateQueueInput{QueueName: name}
@@ -144,7 +144,7 @@ func (sqsResourceService) CreateResourceForSession(t *testing.T, sess *session.S
 	return name, err
 }
 
-func (sqsResourceService) AssertResourceExistsForSession(t *testing.T, sess *session.Session, name *string) (bool, error) {
+func (sqsResourceService) AssertResourceExistsForSession(sess *session.Session, name *string) (bool, error) {
 	svc := sqs.New(sess)
 
 	input := &sqs.GetQueueUrlInput{QueueName: name}
@@ -153,7 +153,7 @@ func (sqsResourceService) AssertResourceExistsForSession(t *testing.T, sess *ses
 	return err == nil, err
 }
 
-func (sqsFifoResourceService) CreateResourceForSession(t *testing.T, sess *session.Session, name *string) (*string, error) {
+func (sqsFifoResourceService) CreateResourceForSession(sess *session.Session, name *string) (*string, error) {
 	svc := sqs.New(sess)
 
 	// Add FIFO suffix
@@ -171,7 +171,7 @@ func (sqsFifoResourceService) CreateResourceForSession(t *testing.T, sess *sessi
 	return name, err
 }
 
-func (sqsFifoResourceService) AssertResourceExistsForSession(t *testing.T, sess *session.Session, name *string) (bool, error) {
+func (sqsFifoResourceService) AssertResourceExistsForSession(sess *session.Session, name *string) (bool, error) {
 	svc := sqs.New(sess)
 
 	input := &sqs.GetQueueUrlInput{QueueName: name}
@@ -180,7 +180,7 @@ func (sqsFifoResourceService) AssertResourceExistsForSession(t *testing.T, sess 
 	return err == nil, err
 }
 
-func (kmsResourceService) CreateResourceForSession(t *testing.T, sess *session.Session, name *string) (*string, error) {
+func (kmsResourceService) CreateResourceForSession(sess *session.Session, name *string) (*string, error) {
 	svc := kms.New(sess)
 
 	input := &kms.CreateKeyInput{
@@ -200,7 +200,7 @@ func (kmsResourceService) CreateResourceForSession(t *testing.T, sess *session.S
 	return name, err
 }
 
-func (kmsResourceService) AssertResourceExistsForSession(t *testing.T, sess *session.Session, name *string) (bool, error) {
+func (kmsResourceService) AssertResourceExistsForSession(sess *session.Session, name *string) (bool, error) {
 	svc := kms.New(NewSession())
 
 	input := &kms.DescribeKeyInput{KeyId: name}
@@ -209,7 +209,7 @@ func (kmsResourceService) AssertResourceExistsForSession(t *testing.T, sess *ses
 	return err == nil, err
 }
 
-func (dynamodbResourceService) CreateResourceForSession(t *testing.T, sess *session.Session, name *string) (*string, error) {
+func (dynamodbResourceService) CreateResourceForSession(sess *session.Session, name *string) (*string, error) {
 	svc := dynamodb.New(sess)
 
 	input := &dynamodb.CreateTableInput{
@@ -238,7 +238,7 @@ func (dynamodbResourceService) CreateResourceForSession(t *testing.T, sess *sess
 	return name, err
 }
 
-func (dynamodbResourceService) AssertResourceExistsForSession(t *testing.T, sess *session.Session, name *string) (bool, error) {
+func (dynamodbResourceService) AssertResourceExistsForSession(sess *session.Session, name *string) (bool, error) {
 	svc := dynamodb.New(sess)
 
 	input := &dynamodb.DescribeTableInput{TableName: name}
@@ -248,7 +248,7 @@ func (dynamodbResourceService) AssertResourceExistsForSession(t *testing.T, sess
 }
 
 // CreateResourceForSession always reuses the same stream because creating one is very slow
-func (kinesisResourceService) CreateResourceForSession(t *testing.T, sess *session.Session, name *string) (*string, error) {
+func (kinesisResourceService) CreateResourceForSession(sess *session.Session, name *string) (*string, error) {
 	kin := kinesis.New(sess)
 
 	// fixed name because aws takes up to 17s to be able to provide the shard info about a new stream
@@ -270,7 +270,7 @@ func (kinesisResourceService) CreateResourceForSession(t *testing.T, sess *sessi
 	return name, err
 }
 
-func (kinesisResourceService) AssertResourceExistsForSession(t *testing.T, sess *session.Session, name *string) (bool, error) {
+func (kinesisResourceService) AssertResourceExistsForSession(sess *session.Session, name *string) (bool, error) {
 	kin := kinesis.New(sess)
 	input := &kinesis.DescribeStreamInput{StreamName: name}
 	err := kin.WaitUntilStreamExists(input)
