@@ -27,7 +27,9 @@ func F(key string, value interface{}) Field {
 // Logging levels
 const (
 	DebugLevel Level = iota + 1
+	// Deprecated: use ErrorLevel instead
 	InfoLevel
+	ErrorLevel
 )
 
 // Level type
@@ -35,10 +37,12 @@ type Level uint8
 
 func (l Level) String() string {
 	switch l {
-	case 1:
+	case DebugLevel:
 		return "DEBU"
-	case 2:
+	case InfoLevel:
 		return "INFO"
+	case ErrorLevel:
+		return "ERRO"
 	default:
 		return "????"
 	}
@@ -59,10 +63,12 @@ type entry struct {
 	file    string
 }
 
-// Logger defines the log methods Debug and Info
+// Logger defines the log methods Debug and Error
 type Logger interface {
 	Debug(string, ...Field)
+	// Deprecated: use Error instead
 	Info(string, ...Field)
+	Error(string, ...Field)
 }
 
 // A Log implements Logger and has a marshaler, a writer and a minimum log level.
@@ -83,17 +89,25 @@ func (l *Log) Debug(message string, fields ...Field) {
 }
 
 // Info logs a message at level Info
+// Deprecated: use Error instead
 func (l *Log) Info(message string, fields ...Field) {
 	if InfoLevel >= l.level {
 		l.log(InfoLevel, message, fields...)
 	}
 }
 
+// Error logs a message at level Error
+func (l *Log) Error(message string, fields ...Field) {
+	if ErrorLevel >= l.level {
+		l.log(ErrorLevel, message, fields...)
+	}
+}
+
 func (l *Log) log(level Level, message string, fields ...Field) {
 	var t *time.Time
 	if !l.withoutTime {
-		time := time.Now()
-		t = &time
+		now := time.Now()
+		t = &now
 	}
 
 	var fi string

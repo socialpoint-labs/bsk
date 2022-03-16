@@ -51,7 +51,7 @@ func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
 			})
 		}
 
-		l.Info("gRPC Message", fields...)
+		l.Debug("gRPC Message", fields...)
 
 		return resp, err
 	}
@@ -83,7 +83,7 @@ func WithErrorLogs(l logx.Logger, options ...ErrorLogsOption) grpc.UnaryServerIn
 				if inCodeList(errCode, logOptions.debugLevelCodes) {
 					l.Debug("gRPC Error", fields...)
 				} else {
-					l.Info("gRPC Error", fields...)
+					l.Error("gRPC Error", fields...)
 				}
 			}
 		}
