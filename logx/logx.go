@@ -26,8 +26,8 @@ func F(key string, value interface{}) Field {
 
 // Logging levels
 const (
+	// Deprecated: use InfoLevel instead
 	DebugLevel Level = iota + 1
-	// Deprecated: use ErrorLevel instead
 	InfoLevel
 	ErrorLevel
 )
@@ -49,7 +49,7 @@ func (l Level) String() string {
 }
 
 // DefaultMinLevel is the minimum debug level for which the logs will appear.
-var DefaultMinLevel = DebugLevel
+var DefaultMinLevel = InfoLevel
 
 // defaultFileSkipLevel is the number of stack frames to ascend to get the calling file
 var defaultFileSkipLevel = 3
@@ -63,10 +63,10 @@ type entry struct {
 	file    string
 }
 
-// Logger defines the log methods Debug and Error
+// Logger defines the log methods Info and Error
 type Logger interface {
+	// Deprecated: use Info instead
 	Debug(string, ...Field)
-	// Deprecated: use Error instead
 	Info(string, ...Field)
 	Error(string, ...Field)
 }
@@ -82,6 +82,7 @@ type Log struct {
 }
 
 // Debug logs a message at level Debug
+// Deprecated: use Info instead
 func (l *Log) Debug(message string, fields ...Field) {
 	if DebugLevel >= l.level {
 		l.log(DebugLevel, message, fields...)
@@ -89,7 +90,6 @@ func (l *Log) Debug(message string, fields ...Field) {
 }
 
 // Info logs a message at level Info
-// Deprecated: use Error instead
 func (l *Log) Info(message string, fields ...Field) {
 	if InfoLevel >= l.level {
 		l.log(InfoLevel, message, fields...)
