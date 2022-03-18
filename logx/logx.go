@@ -26,8 +26,10 @@ func F(key string, value interface{}) Field {
 
 // Logging levels
 const (
+	// Deprecated: use InfoLevel instead
 	DebugLevel Level = iota + 1
 	InfoLevel
+	ErrorLevel
 )
 
 // Level type
@@ -35,17 +37,19 @@ type Level uint8
 
 func (l Level) String() string {
 	switch l {
-	case 1:
+	case DebugLevel:
 		return "DEBU"
-	case 2:
+	case InfoLevel:
 		return "INFO"
+	case ErrorLevel:
+		return "ERRO"
 	default:
 		return "????"
 	}
 }
 
 // DefaultMinLevel is the minimum debug level for which the logs will appear.
-var DefaultMinLevel = DebugLevel
+var DefaultMinLevel = InfoLevel
 
 // defaultFileSkipLevel is the number of stack frames to ascend to get the calling file
 var defaultFileSkipLevel = 3
@@ -59,10 +63,12 @@ type entry struct {
 	file    string
 }
 
-// Logger defines the log methods Debug and Info
+// Logger defines the log methods Info and Error
 type Logger interface {
+	// Deprecated: use Info instead
 	Debug(string, ...Field)
 	Info(string, ...Field)
+	Error(string, ...Field)
 }
 
 // A Log implements Logger and has a marshaler, a writer and a minimum log level.
@@ -76,6 +82,7 @@ type Log struct {
 }
 
 // Debug logs a message at level Debug
+// Deprecated: use Info instead
 func (l *Log) Debug(message string, fields ...Field) {
 	if DebugLevel >= l.level {
 		l.log(DebugLevel, message, fields...)
@@ -89,11 +96,18 @@ func (l *Log) Info(message string, fields ...Field) {
 	}
 }
 
+// Error logs a message at level Error
+func (l *Log) Error(message string, fields ...Field) {
+	if ErrorLevel >= l.level {
+		l.log(ErrorLevel, message, fields...)
+	}
+}
+
 func (l *Log) log(level Level, message string, fields ...Field) {
 	var t *time.Time
 	if !l.withoutTime {
-		time := time.Now()
-		t = &time
+		now := time.Now()
+		t = &now
 	}
 
 	var fi string
