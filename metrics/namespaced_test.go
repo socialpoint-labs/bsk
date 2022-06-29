@@ -8,8 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/metrics"
 )
 
 func TestPublisherWithNamespacedMetrics(t *testing.T) {

@@ -6,9 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/run"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/socialpoint-labs/bsk/run"
 )
 
 func TestWithRetry(t *testing.T) {

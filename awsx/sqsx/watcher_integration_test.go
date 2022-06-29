@@ -10,10 +10,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/socialpoint-labs/bsk/awsx/awstest"
-	"github.com/socialpoint-labs/bsk/awsx/sqsx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/socialpoint-labs/bsk/awsx/awstest"
+	"github.com/socialpoint-labs/bsk/awsx/sqsx"
 )
 
 func TestWatch(t *testing.T) {

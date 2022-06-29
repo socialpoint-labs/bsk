@@ -7,9 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/socialpoint-labs/bsk/netutil"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestPublisherImplementsMetrics(t *testing.T) {

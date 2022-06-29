@@ -9,8 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/httpx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/httpx"
 )
 
 func TestAddHeaderDecorator(t *testing.T) {

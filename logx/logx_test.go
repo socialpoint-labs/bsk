@@ -7,8 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/socialpoint-labs/bsk/logx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/logx"
 )
 
 func TestDefaultAndLogstashLogging(t *testing.T) {

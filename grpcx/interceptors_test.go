@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -15,7 +16,6 @@ import (
 	"github.com/socialpoint-labs/bsk/logx"
 	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/socialpoint-labs/bsk/recovery"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
