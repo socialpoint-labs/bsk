@@ -85,7 +85,7 @@ func TestWithMetricsStream(t *testing.T) {
 	a.Contains(timer.Tags(), metrics.NewTag("success", true))
 }
 
-func TestWithRequestResponseLogs(t *testing.T) {
+func TestWithRequestResponseLogsUnary(t *testing.T) {
 	t.Parallel()
 	a := assert.New(t)
 
@@ -101,7 +101,7 @@ func TestWithRequestResponseLogs(t *testing.T) {
 			return expectedResponse, nil
 		})
 
-		interceptor := grpcx.WithRequestResponseLogs(l)
+		interceptor := grpcx.WithRequestResponseLogsUnary(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.NoError(err)
@@ -123,7 +123,7 @@ func TestWithRequestResponseLogs(t *testing.T) {
 			return expectedResponse, expectedErr
 		})
 
-		interceptor := grpcx.WithRequestResponseLogs(l)
+		interceptor := grpcx.WithRequestResponseLogsUnary(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
@@ -132,14 +132,14 @@ func TestWithRequestResponseLogs(t *testing.T) {
 	})
 }
 
-func TestWithStructuredPanicLogs(t *testing.T) {
+func TestWithStructuredPanicLogsUnary(t *testing.T) {
 	t.Parallel()
 	a := assert.New(t)
 
 	t.Run("panic handler works as expected", func(t *testing.T) {
 		reached := false
 		spyExitFunc := func() { reached = true }
-		interceptor := grpcx.WithStructuredPanicLogs(logx.NewDummy(), recovery.WithExitFunction(spyExitFunc))
+		interceptor := grpcx.WithStructuredPanicLogsUnary(logx.NewDummy(), recovery.WithExitFunction(spyExitFunc))
 
 		ctx := context.Background()
 		info := &grpc.UnaryServerInfo{FullMethod: method}

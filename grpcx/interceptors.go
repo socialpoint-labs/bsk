@@ -51,8 +51,13 @@ func WithMetricsStream(m metrics.Metrics) grpc.StreamServerInterceptor {
 	}
 }
 
-// WithRequestResponseLogs returns a gRPC interceptor for unary calls that instrument requests with logs for the request and response.
+// Deprecated: use WithRequestResponseLogsUnary instead
 func WithRequestResponseLogs(l logx.Logger) grpc.UnaryServerInterceptor {
+	return WithRequestResponseLogsUnary(l)
+}
+
+// WithRequestResponseLogsUnary returns a gRPC interceptor for UNARY calls that instrument requests with logs for the request and response.
+func WithRequestResponseLogsUnary(l logx.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		resp, err := handler(ctx, req)
 
@@ -177,7 +182,12 @@ func WithDiscardedCodes(codes ...codes.Code) func(*errorLogsOptions) {
 	}
 }
 
+// Deprecated: use WithStructuredPanicLogsUnary instead
 func WithStructuredPanicLogs(l logx.Logger, options ...recovery.Options) grpc.UnaryServerInterceptor {
+	return WithStructuredPanicLogsUnary(l, options...)
+}
+
+func WithStructuredPanicLogsUnary(l logx.Logger, options ...recovery.Options) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		recoveryHandler := recovery.Handler(l, options...)
 		defer recoveryHandler()
