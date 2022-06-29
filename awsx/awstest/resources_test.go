@@ -8,9 +8,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/socialpoint-labs/bsk/awsx/awstest"
 	"github.com/socialpoint-labs/bsk/uuid"
-	"github.com/stretchr/testify/assert"
 )
 
 var resourceTypes = []string{

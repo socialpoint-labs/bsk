@@ -5,8 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/socialpoint-labs/bsk/httpx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/httpx"
 )
 
 func TestStatusHandler(t *testing.T) {

@@ -4,25 +4,29 @@ run:
 
 linters:
   enable:
-    - revive
     - unconvert
     - goconst
     - misspell
+    - deadcode
+    #    - gci
+    - importas
+    - gofmt
+    - goimports
     - prealloc
     - gocritic
-    - govet
-    - deadcode
-    - gci
-    - importas
-    - goimports
-    - gofmt
 
 linters-settings:
   errcheck:
     # report about not checking of errors in type assertions: `a := b.(MyStruct)`;
     # default is false: such cases aren't reported by default.
     check-type-assertions: true
-
-  govet:
-    # report about shadowed variables
-    check-shadowing: true
+  gci:
+    sections:
+      - standard # Captures all standard packages if they do not match another section.
+      - default # Contains all imports that could not be matched to another section type.
+      - newLine # Prints an empty line
+      - prefix(github.com/socialpoint) # Groups all imports with the specified Prefix.
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/socialpoint

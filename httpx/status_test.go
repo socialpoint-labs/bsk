@@ -3,8 +3,9 @@ package httpx_test
 import (
 	"testing"
 
-	"github.com/socialpoint-labs/bsk/httpx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/httpx"
 )
 
 func TestIsClientError(t *testing.T) {

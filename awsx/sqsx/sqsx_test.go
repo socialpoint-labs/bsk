@@ -9,8 +9,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
-	"github.com/socialpoint-labs/bsk/awsx/sqsx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/awsx/sqsx"
 )
 
 func TestReceiveMessage_WithOptions(t *testing.T) {

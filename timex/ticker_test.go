@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/timex"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/timex"
 )
 
 func TestRunInterval(t *testing.T) {

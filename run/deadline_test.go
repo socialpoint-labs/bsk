@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/run"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/run"
 )
 
 func TestWithDeadline(t *testing.T) {

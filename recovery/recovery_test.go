@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/socialpoint-labs/bsk/logx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/logx"
 )
 
 func TestWithRequestResponseLogs(t *testing.T) {

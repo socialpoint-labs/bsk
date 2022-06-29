@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socialpoint-labs/bsk/contextx"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/contextx"
 )
 
 func wgAddAdapter(wg *sync.WaitGroup) contextx.AdapterFunc {

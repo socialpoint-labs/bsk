@@ -8,10 +8,11 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/socialpoint-labs/bsk/awsx/awstest"
-	"github.com/socialpoint-labs/bsk/awsx/sqsx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/socialpoint-labs/bsk/awsx/awstest"
+	"github.com/socialpoint-labs/bsk/awsx/sqsx"
 )
 
 const payload = "random-payload:life-is-to-short-to-generate-a-really-random-payload-when-it-should-not-be-random-at-all"

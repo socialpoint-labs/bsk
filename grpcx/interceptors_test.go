@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
+
 	"github.com/socialpoint-labs/bsk/grpcx"
 	"github.com/socialpoint-labs/bsk/logx"
 	"github.com/socialpoint-labs/bsk/metrics"
 	"github.com/socialpoint-labs/bsk/recovery"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -33,7 +35,7 @@ var exampleResponse = struct {
 	Result: okResult,
 }
 
-func TestWithMetrics(t *testing.T) {
+func TestWithMetricsUnary(t *testing.T) {
 	a := assert.New(t)
 	t.Parallel()
 
@@ -46,7 +48,7 @@ func TestWithMetrics(t *testing.T) {
 		return expected, nil
 	})
 
-	interceptor := grpcx.WithMetrics(m)
+	interceptor := grpcx.WithMetricsUnary(m)
 	resp, err := interceptor(ctx, req, info, handler)
 
 	a.NoError(err)
@@ -58,7 +60,32 @@ func TestWithMetrics(t *testing.T) {
 	a.Contains(timer.Tags(), metrics.NewTag("success", true))
 }
 
-func TestWithRequestResponseLogs(t *testing.T) {
+func TestWithMetricsStream(t *testing.T) {
+	a := assert.New(t)
+	t.Parallel()
+
+	// prepare
+	m := metrics.NewRecorder()
+	ctx := context.Background()
+	ss := &dummyServerStream{}
+	info := &grpc.StreamServerInfo{FullMethod: method}
+	handler := grpc.StreamHandler(func(srv interface{}, stream grpc.ServerStream) error {
+		return nil
+	})
+
+	// act
+	interceptor := grpcx.WithMetricsStream(m)
+	err := interceptor(ctx, ss, info, handler)
+
+	// assert
+	a.NoError(err)
+	timer := m.Get("grpc.request_duration")
+	a.NotNil(timer)
+	a.Contains(timer.Tags(), metrics.NewTag("rpc_method", method))
+	a.Contains(timer.Tags(), metrics.NewTag("success", true))
+}
+
+func TestWithRequestResponseLogsUnary(t *testing.T) {
 	t.Parallel()
 	a := assert.New(t)
 
@@ -74,7 +101,7 @@ func TestWithRequestResponseLogs(t *testing.T) {
 			return expectedResponse, nil
 		})
 
-		interceptor := grpcx.WithRequestResponseLogs(l)
+		interceptor := grpcx.WithRequestResponseLogsUnary(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.NoError(err)
@@ -96,7 +123,7 @@ func TestWithRequestResponseLogs(t *testing.T) {
 			return expectedResponse, expectedErr
 		})
 
-		interceptor := grpcx.WithRequestResponseLogs(l)
+		interceptor := grpcx.WithRequestResponseLogsUnary(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
@@ -105,14 +132,14 @@ func TestWithRequestResponseLogs(t *testing.T) {
 	})
 }
 
-func TestWithStructuredPanicLogs(t *testing.T) {
+func TestWithStructuredPanicLogsUnary(t *testing.T) {
 	t.Parallel()
 	a := assert.New(t)
 
 	t.Run("panic handler works as expected", func(t *testing.T) {
 		reached := false
 		spyExitFunc := func() { reached = true }
-		interceptor := grpcx.WithStructuredPanicLogs(logx.NewDummy(), recovery.WithExitFunction(spyExitFunc))
+		interceptor := grpcx.WithStructuredPanicLogsUnary(logx.NewDummy(), recovery.WithExitFunction(spyExitFunc))
 
 		ctx := context.Background()
 		info := &grpc.UnaryServerInfo{FullMethod: method}
@@ -127,7 +154,7 @@ func TestWithStructuredPanicLogs(t *testing.T) {
 	})
 }
 
-func TestWithErrorLogs(t *testing.T) {
+func TestWithErrorLogsUnary(t *testing.T) {
 	t.Parallel()
 	a := assert.New(t)
 
@@ -144,7 +171,7 @@ func TestWithErrorLogs(t *testing.T) {
 			return expectedResponse, nil
 		})
 
-		interceptor := grpcx.WithErrorLogs(l)
+		interceptor := grpcx.WithErrorLogsUnary(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.NoError(err)
@@ -167,7 +194,7 @@ func TestWithErrorLogs(t *testing.T) {
 			return expectedResponse, expectedErr
 		})
 
-		interceptor := grpcx.WithErrorLogs(l)
+		interceptor := grpcx.WithErrorLogsUnary(l)
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
@@ -190,7 +217,7 @@ func TestWithErrorLogs(t *testing.T) {
 			return expectedResponse, expectedErr
 		})
 
-		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDebugLevelCodes(expectedCode))
+		interceptor := grpcx.WithErrorLogsUnary(l, grpcx.WithDebugLevelCodes(expectedCode))
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
@@ -213,11 +240,129 @@ func TestWithErrorLogs(t *testing.T) {
 			return expectedResponse, expectedErr
 		})
 
-		interceptor := grpcx.WithErrorLogs(l, grpcx.WithDiscardedCodes(expectedCode, codes.InvalidArgument, codes.AlreadyExists))
+		interceptor := grpcx.WithErrorLogsUnary(l, grpcx.WithDiscardedCodes(expectedCode, codes.InvalidArgument, codes.AlreadyExists))
 		resp, err := interceptor(ctx, req, info, handler)
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
 		a.Equal("", w.String())
 	})
+}
+
+func TestWithErrorLogsStream(t *testing.T) {
+	t.Parallel()
+	a := assert.New(t)
+
+	t.Run("logs nothing if no error", func(t *testing.T) {
+		// prepare
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+		ctx := context.Background()
+		req := &dummyServerStream{}
+		info := &grpc.StreamServerInfo{FullMethod: method}
+		handler := grpc.StreamHandler(func(srv interface{}, stream grpc.ServerStream) error {
+			return nil
+		})
+
+		// act
+		interceptor := grpcx.WithErrorLogsStream(l)
+		err := interceptor(ctx, req, info, handler)
+
+		// assert
+		a.NoError(err)
+		a.Equal("", w.String())
+	})
+
+	t.Run("logs error on info level with default options", func(t *testing.T) {
+		// prepare
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+		ctx := context.Background()
+		expectedCode := codes.Unknown
+		expectedErr := status.Error(expectedCode, "some error")
+		req := &dummyServerStream{}
+		info := &grpc.StreamServerInfo{FullMethod: method}
+		handler := grpc.StreamHandler(func(srv interface{}, stream grpc.ServerStream) error {
+			return expectedErr
+		})
+
+		// act
+		interceptor := grpcx.WithErrorLogsStream(l)
+		err := interceptor(ctx, req, info, handler)
+
+		// assert
+		a.Error(err)
+		a.Contains(w.String(), fmt.Sprintf(`ERRO gRPC Error FIELDS ctx_full_method=%s ctx_response_error_code=%s ctx_response_error_message=%s`, method, expectedCode.String(), expectedErr.Error()))
+	})
+
+	t.Run("logs error on debug level if custom options added", func(t *testing.T) {
+		// prepare
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+		ctx := context.Background()
+		expectedCode := codes.NotFound
+		expectedErr := status.Error(expectedCode, "some error")
+		req := &dummyServerStream{}
+		info := &grpc.StreamServerInfo{FullMethod: method}
+		handler := grpc.StreamHandler(func(srv interface{}, stream grpc.ServerStream) error {
+			return expectedErr
+		})
+
+		// act
+		interceptor := grpcx.WithErrorLogsStream(l, grpcx.WithDebugLevelCodes(expectedCode))
+		err := interceptor(ctx, req, info, handler)
+
+		// assert
+		a.Error(err)
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_response_error_code=%s ctx_response_error_message=%s`, method, expectedCode.String(), expectedErr.Error()))
+	})
+
+	t.Run("do not log error if discarded options added", func(t *testing.T) {
+		// prepare
+		w := bytes.NewBufferString("")
+		l := logx.New(logx.WriterOpt(w))
+		ctx := context.Background()
+		expectedCode := codes.NotFound
+		expectedErr := status.Error(expectedCode, "some error")
+		req := &dummyServerStream{}
+		info := &grpc.StreamServerInfo{FullMethod: method}
+		handler := grpc.StreamHandler(func(srv interface{}, stream grpc.ServerStream) error {
+			return expectedErr
+		})
+
+		// act
+		interceptor := grpcx.WithErrorLogsStream(l, grpcx.WithDiscardedCodes(expectedCode, codes.InvalidArgument, codes.AlreadyExists))
+		err := interceptor(ctx, req, info, handler)
+
+		// assert
+		a.Error(err)
+		a.Equal("", w.String())
+	})
+}
+
+// ---------------- dummyServerStream ----------------
+
+type dummyServerStream struct{}
+
+func (dummyServerStream) SetHeader(md metadata.MD) error {
+	return nil
+}
+
+func (dummyServerStream) SendHeader(md metadata.MD) error {
+	return nil
+}
+
+func (dummyServerStream) SetTrailer(md metadata.MD) {
+}
+
+func (dummyServerStream) Context() context.Context {
+	return nil
+}
+
+func (dummyServerStream) SendMsg(m interface{}) error {
+	return nil
+}
+
+func (dummyServerStream) RecvMsg(m interface{}) error {
+	return nil
 }

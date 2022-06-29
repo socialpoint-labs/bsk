@@ -10,9 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/socialpoint-labs/bsk/httpx"
 	"github.com/socialpoint-labs/bsk/metrics"
-	"github.com/stretchr/testify/assert"
 )
 
 const errorMsg = "randomError"

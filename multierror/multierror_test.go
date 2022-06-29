@@ -4,8 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/socialpoint-labs/bsk/multierror"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/socialpoint-labs/bsk/multierror"
 )
 
 func TestAppend(t *testing.T) {
