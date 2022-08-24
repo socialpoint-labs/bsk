@@ -1,5 +1,5 @@
 PACKAGES=$(shell go list ./...)
-LINTER_VERSION=1.46.2
+LINTER_VERSION=1.49.0
 
 lint:
 	goimports -w .

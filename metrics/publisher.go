@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
 	"time"
@@ -53,7 +52,7 @@ func NewPublisher(w io.Writer, e Encoder, flushInterval time.Duration, errorHand
 // metrics, useful to be used as a testing dummy/stub or when you don't care
 // that all reported metrics get discarded
 func NewDiscardAll() *Publisher {
-	return NewPublisher(ioutil.Discard, StatsDEncoder, FlushEvery15s, DiscardErrors)
+	return NewPublisher(io.Discard, StatsDEncoder, FlushEvery15s, DiscardErrors)
 }
 
 // NewStdout returns a publisher that sends the metrics to stdout.
