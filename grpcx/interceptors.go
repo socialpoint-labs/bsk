@@ -65,14 +65,14 @@ func WithRequestResponseLogsUnary(l logx.Logger) grpc.UnaryServerInterceptor {
 		respMsg, _ := json.Marshal(resp)
 
 		fields := []logx.Field{
-			{Key: "ctx_full_method", Value: info.FullMethod},
-			{Key: "ctx_request_content", Value: string(reqMsg)},
-			{Key: "ctx_response_content", Value: string(respMsg)},
+			{Key: "ctxt_full_method", Value: info.FullMethod},
+			{Key: "ctxt_request_content", Value: string(reqMsg)},
+			{Key: "ctxt_response_content", Value: string(respMsg)},
 		}
 
 		if err != nil {
 			fields = append(fields, logx.Field{
-				Key:   "ctx_response_error",
+				Key:   "ctxt_response_error",
 				Value: err.Error(),
 			})
 		}
@@ -104,11 +104,11 @@ func WithErrorLogsUnary(l logx.Logger, options ...ErrorLogsOption) grpc.UnarySer
 				reqMsg, _ := json.Marshal(req)
 				respMsg, _ := json.Marshal(resp)
 				fields := []logx.Field{
-					{Key: "ctx_full_method", Value: info.FullMethod},
-					{Key: "ctx_request_content", Value: string(reqMsg)},
-					{Key: "ctx_response_content", Value: string(respMsg)},
-					{Key: "ctx_response_error_code", Value: errCode},
-					{Key: "ctx_response_error_message", Value: err.Error()},
+					{Key: "ctxt_full_method", Value: info.FullMethod},
+					{Key: "ctxt_request_content", Value: string(reqMsg)},
+					{Key: "ctxt_response_content", Value: string(respMsg)},
+					{Key: "ctxt_response_error_code", Value: errCode},
+					{Key: "ctxt_response_error_message", Value: err.Error()},
 				}
 				if inCodeList(errCode, logOptions.debugLevelCodes) {
 					l.Info("gRPC Error", fields...)
@@ -136,10 +136,10 @@ func WithErrorLogsStream(l logx.Logger, options ...ErrorLogsOption) grpc.StreamS
 			errCode := status.Code(err)
 			if !inCodeList(errCode, logOptions.discardedCodes) {
 				fields := []logx.Field{
-					{Key: "ctx_full_method", Value: info.FullMethod},
-					{Key: "ctx_response_error_code", Value: errCode},
-					{Key: "ctx_response_error_message", Value: err.Error()},
-					{Key: "ctx_error_code", Value: status.Code(err)},
+					{Key: "ctxt_full_method", Value: info.FullMethod},
+					{Key: "ctxt_response_error_code", Value: errCode},
+					{Key: "ctxt_response_error_message", Value: err.Error()},
+					{Key: "ctxt_error_code", Value: status.Code(err)},
 				}
 				if inCodeList(errCode, logOptions.debugLevelCodes) {
 					l.Info("gRPC Error", fields...)
