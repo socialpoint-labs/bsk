@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	bufferSize      = 1024
-	datadogHost     = "127.0.0.1"
-	datadogHostPort = "8125"
+	bufferSize         = 1024
+	datadogHost        = "127.0.0.1"
+	datadogHostPort    = "8125"
+	datadogUnixAddress = "/var/run/datadog/dsd.socket"
 	// this is datadog's agent default flush time, in case we lower it in the agent's conf change it here also
 	datadogFlush = FlushEvery15s
 )
@@ -67,7 +68,7 @@ type DatadogOption func(*datadogOptions)
 type datadogOptions struct {
 	host          string
 	port          string
-	addr          string
+	unixAddress   string
 	flushInterval time.Duration
 }
 
@@ -85,10 +86,10 @@ func WithDDPort(p string) DatadogOption {
 	}
 }
 
-// WithDDAddress returns an option that sets the datadog host address
-func WithDDAddress(a string) DatadogOption {
+// WithDDUnixAddress returns an option that sets the datadog UDS address
+func WithDDUnixAddress(a string) DatadogOption {
 	return func(o *datadogOptions) {
-		o.addr = a
+		o.unixAddress = a
 	}
 }
 
@@ -140,21 +141,15 @@ func NewDataDogUnix(opts ...DatadogOption) *Publisher {
 		o(options)
 	}
 
-	if options.host == "" {
-		options.host = datadogHost
-	}
-
-	if options.port == "" {
-		options.port = datadogHostPort
+	if options.unixAddress == "" {
+		options.unixAddress = datadogUnixAddress
 	}
 
 	if options.flushInterval == 0 {
 		options.flushInterval = datadogFlush
 	}
 
-	addr := fmt.Sprintf("%s:%s", options.host, options.port)
-
-	conn, err := net.Dial("unix", addr)
+	conn, err := net.Dial("unix", options.unixAddress)
 	if err != nil {
 		panic(fmt.Sprintf("cannot create Unix client: `%s`", err.Error()))
 	}

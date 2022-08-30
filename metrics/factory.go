@@ -37,7 +37,7 @@ func NewMetricsRunnerFromDSN(dsn string) (Metrics, contextx.Runner) {
 			panic("datadog metrics need a namespace")
 		}
 		publisher = NewDataDogUnix(
-			WithDDAddress(params.Get("addr")),
+			WithDDUnixAddress(params.Get("addr")),
 		)
 	case "datadog-lambda":
 		if namespace == "" {
