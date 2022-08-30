@@ -67,6 +67,7 @@ type DatadogOption func(*datadogOptions)
 type datadogOptions struct {
 	host          string
 	port          string
+	addr          string
 	flushInterval time.Duration
 }
 
@@ -77,17 +78,24 @@ func WithDDHost(h string) DatadogOption {
 	}
 }
 
-// WithDDFlushInterval returns an option that sets the datadog flush ionterval
-func WithDDFlushInterval(i time.Duration) DatadogOption {
-	return func(o *datadogOptions) {
-		o.flushInterval = i
-	}
-}
-
 // WithDDPort returns an option that sets the datadog host port
 func WithDDPort(p string) DatadogOption {
 	return func(o *datadogOptions) {
 		o.port = p
+	}
+}
+
+// WithDDAddress returns an option that sets the datadog host address
+func WithDDAddress(a string) DatadogOption {
+	return func(o *datadogOptions) {
+		o.addr = a
+	}
+}
+
+// WithDDFlushInterval returns an option that sets the datadog flush interval
+func WithDDFlushInterval(i time.Duration) DatadogOption {
+	return func(o *datadogOptions) {
+		o.flushInterval = i
 	}
 }
 
@@ -123,6 +131,35 @@ func NewDataDog(opts ...DatadogOption) *Publisher {
 	}
 
 	return NewPublisher(client, StatsDEncoder, options.flushInterval, nil)
+}
+
+// NewDataDogUnix returns a publisher that sends the metrics to the datadog agent via Unix Domain Sockets
+func NewDataDogUnix(opts ...DatadogOption) *Publisher {
+	options := &datadogOptions{}
+	for _, o := range opts {
+		o(options)
+	}
+
+	if options.host == "" {
+		options.host = datadogHost
+	}
+
+	if options.port == "" {
+		options.port = datadogHostPort
+	}
+
+	if options.flushInterval == 0 {
+		options.flushInterval = datadogFlush
+	}
+
+	addr := fmt.Sprintf("%s:%s", options.host, options.port)
+
+	conn, err := net.Dial("unix", addr)
+	if err != nil {
+		panic(fmt.Sprintf("cannot create Unix client: `%s`", err.Error()))
+	}
+
+	return NewPublisher(conn, StatsDEncoder, options.flushInterval, nil)
 }
 
 // NewDataDogLambda returns a publisher that satisfies DataDog metrics writing for AWS Lambda.

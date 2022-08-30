@@ -32,6 +32,13 @@ func NewMetricsRunnerFromDSN(dsn string) (Metrics, contextx.Runner) {
 			WithDDHost(params.Get("host")),
 			WithDDPort(params.Get("port")),
 		)
+	case "datadog-unix":
+		if namespace == "" {
+			panic("datadog metrics need a namespace")
+		}
+		publisher = NewDataDogUnix(
+			WithDDAddress(params.Get("addr")),
+		)
 	case "datadog-lambda":
 		if namespace == "" {
 			panic("datadog metrics need a namespace")
