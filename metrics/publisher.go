@@ -149,7 +149,7 @@ func NewDataDogUnix(opts ...DatadogOption) *Publisher {
 		options.flushInterval = datadogFlush
 	}
 
-	conn, err := net.Dial("unix", options.unixAddress)
+	conn, err := net.Dial("unixgram", options.unixAddress)
 	if err != nil {
 		panic(fmt.Sprintf("cannot create Unix client: `%s`", err.Error()))
 	}
