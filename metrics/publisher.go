@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	bufferSize      = 1024
-	datadogHost     = "127.0.0.1"
-	datadogHostPort = "8125"
+	bufferSize         = 1024
+	datadogHost        = "127.0.0.1"
+	datadogHostPort    = "8125"
+	datadogUnixAddress = "/var/run/datadog/dsd.socket"
 	// this is datadog's agent default flush time, in case we lower it in the agent's conf change it here also
 	datadogFlush = FlushEvery15s
 )
@@ -67,6 +68,7 @@ type DatadogOption func(*datadogOptions)
 type datadogOptions struct {
 	host          string
 	port          string
+	unixAddress   string
 	flushInterval time.Duration
 }
 
@@ -77,17 +79,24 @@ func WithDDHost(h string) DatadogOption {
 	}
 }
 
-// WithDDFlushInterval returns an option that sets the datadog flush ionterval
-func WithDDFlushInterval(i time.Duration) DatadogOption {
-	return func(o *datadogOptions) {
-		o.flushInterval = i
-	}
-}
-
 // WithDDPort returns an option that sets the datadog host port
 func WithDDPort(p string) DatadogOption {
 	return func(o *datadogOptions) {
 		o.port = p
+	}
+}
+
+// WithDDUnixAddress returns an option that sets the datadog UDS address
+func WithDDUnixAddress(a string) DatadogOption {
+	return func(o *datadogOptions) {
+		o.unixAddress = a
+	}
+}
+
+// WithDDFlushInterval returns an option that sets the datadog flush interval
+func WithDDFlushInterval(i time.Duration) DatadogOption {
+	return func(o *datadogOptions) {
+		o.flushInterval = i
 	}
 }
 
@@ -123,6 +132,29 @@ func NewDataDog(opts ...DatadogOption) *Publisher {
 	}
 
 	return NewPublisher(client, StatsDEncoder, options.flushInterval, nil)
+}
+
+// NewDataDogUnix returns a publisher that sends the metrics to the datadog agent via Unix Domain Sockets
+func NewDataDogUnix(opts ...DatadogOption) *Publisher {
+	options := &datadogOptions{}
+	for _, o := range opts {
+		o(options)
+	}
+
+	if options.unixAddress == "" {
+		options.unixAddress = datadogUnixAddress
+	}
+
+	if options.flushInterval == 0 {
+		options.flushInterval = datadogFlush
+	}
+
+	conn, err := net.Dial("unixgram", options.unixAddress)
+	if err != nil {
+		panic(fmt.Sprintf("cannot create Unix client: `%s`", err.Error()))
+	}
+
+	return NewPublisher(conn, StatsDEncoder, options.flushInterval, nil)
 }
 
 // NewDataDogLambda returns a publisher that satisfies DataDog metrics writing for AWS Lambda.
