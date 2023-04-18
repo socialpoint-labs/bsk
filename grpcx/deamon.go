@@ -20,7 +20,7 @@ type Daemon struct {
 // Application is a contextx.Runner that can register gRPC services
 type Application interface {
 	contextx.Runner
-	RegisterGRPC(*grpc.Server)
+	RegisterGRPC(grpc.ServiceRegistrar)
 }
 
 func NewDaemon(port int, svr *grpc.Server, apps ...Application) Daemon {
