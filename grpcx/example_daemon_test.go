@@ -36,10 +36,10 @@ func ExampleDaemon_Run() {
 
 func exampleServer() *grpc.Server {
 	encoding.RegisterCodec(noopCodec{})
-	return grpc.NewServer(grpc.UnknownServiceHandler(unknownServiceHandler))
+	return grpc.NewServer(grpc.UnknownServiceHandler(exampleServiceHandler))
 }
 
-func unknownServiceHandler(srv interface{}, stream grpc.ServerStream) error {
+func exampleServiceHandler(srv interface{}, stream grpc.ServerStream) error {
 	fullMethodName, ok := grpc.MethodFromServerStream(stream)
 	if !ok {
 		return errors.New("could not determine method from server stream")
@@ -71,25 +71,6 @@ func exampleCall(ctx context.Context, lis *bufconn.Listener) {
 	}
 
 	fmt.Println("got response from server:", string(out))
-}
-
-type noopCodec struct{}
-
-func (noopCodec) Marshal(v interface{}) ([]byte, error) {
-	return v.([]byte), nil
-}
-
-func (noopCodec) Unmarshal(data []byte, v interface{}) error {
-	*(v.(*[]byte)) = data
-	return nil
-}
-
-func (noopCodec) Name() string {
-	return "noop-codec"
-}
-
-func (noopCodec) String() string {
-	return "noop-codec"
 }
 
 type exampleApplication struct {
