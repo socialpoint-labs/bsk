@@ -20,14 +20,17 @@ func ExampleDaemon_Run() {
 	defer lis.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
-	dae := grpcx.NewDaemon(server, grpcx.WithListener(lis))
+	app := exampleApplication{}
+	dae := grpcx.NewDaemon(server, grpcx.WithListener(lis), grpcx.WithApplications(app))
 	go dae.Run(ctx)
 
 	exampleCall(ctx, lis)
 
 	cancel()
 
-	// Output: /test.service/test.call rpc handled!
+	// Output: example rpcs registered
+	// example application run
+	// /test.service/test.call rpc handled!
 	// got response from server: bye
 }
 
@@ -87,4 +90,15 @@ func (noopCodec) Name() string {
 
 func (noopCodec) String() string {
 	return "noop-codec"
+}
+
+type exampleApplication struct {
+}
+
+func (e exampleApplication) Run(ctx context.Context) {
+	fmt.Println("example application run")
+}
+
+func (e exampleApplication) RegisterGRPC(registrar grpc.ServiceRegistrar) {
+	fmt.Println("example rpcs registered")
 }
