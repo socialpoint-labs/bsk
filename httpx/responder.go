@@ -72,7 +72,8 @@ func (o *Responder) Respond(w http.ResponseWriter, r *http.Request, status int, 
 // WithStatus responds to the client with the specified status.
 // Responder.StatusData will be called to obtain the data payload, or a default
 // payload will be returned:
-//     {"status":"I'm a teapot","code":418}
+//
+//	{"status":"I'm a teapot","code":418}
 func (o *Responder) WithStatus(w http.ResponseWriter, r *http.Request, status int) {
 	var data interface{}
 	if o.StatusData != nil {
