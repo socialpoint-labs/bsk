@@ -2,7 +2,6 @@ package grpcx
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 
@@ -16,19 +15,15 @@ import (
 // A gRPC Daemon will manage the lifecycle of the given gRPC server, gracefully shutting it down
 // once the runner context is done.
 //
-// Either a port or a listener is needed for the daemon to run. If no listener is given,
-// a TCP listener will be created for the given port.
-//
-// Typically, you'll want to pass one or more Applications. The daemon will register the gRPC
+// Typically, you'll want to pass one or more Applications as options. The daemon will register the gRPC
 // endpoints of every application and run it with the runner context.
 // A daemon can run without any Applications. This can be interesting for certain use cases where you want
 // to manage the server by yourself and delegate the lifecycle management.
 //
-// Errors that might happen during the listener setup and running the gRPC server will be passed
-// through an optional error func. If none is given, they'll be printed to the standard output.
+// Errors that might happen  running the gRPC server will be passed through an optional error func.
+// If none is given, they'll be printed to the standard output.
 type Daemon struct {
 	svr  *grpc.Server
-	port int
 	lis  net.Listener
 	apps []Application
 	ef   func(error)
@@ -43,22 +38,8 @@ type Application interface {
 type DaemonOption func(*daemonOptions)
 
 type daemonOptions struct {
-	port int
-	lis  net.Listener
 	apps []Application
 	ef   func(error)
-}
-
-func WithPort(p int) DaemonOption {
-	return func(opts *daemonOptions) {
-		opts.port = p
-	}
-}
-
-func WithListener(lis net.Listener) DaemonOption {
-	return func(opts *daemonOptions) {
-		opts.lis = lis
-	}
 }
 
 func WithApplications(apps ...Application) DaemonOption {
@@ -73,8 +54,8 @@ func WithErrorFunc(ef func(error)) DaemonOption {
 	}
 }
 
-// NewDaemon creates a gRPC Daemon for the given listener.
-func NewDaemon(svr *grpc.Server, opts ...DaemonOption) Daemon {
+// NewDaemon creates a gRPC Daemon for the given gRPC server and listener.
+func NewDaemon(svr *grpc.Server, lis net.Listener, opts ...DaemonOption) Daemon {
 	options := &daemonOptions{
 		ef: defaultErrorFunc,
 	}
@@ -84,8 +65,7 @@ func NewDaemon(svr *grpc.Server, opts ...DaemonOption) Daemon {
 
 	return Daemon{
 		svr:  svr,
-		port: options.port,
-		lis:  options.lis,
+		lis:  lis,
 		apps: options.apps,
 		ef:   options.ef,
 	}
@@ -100,30 +80,16 @@ func (d Daemon) Run(ctx context.Context) {
 		go app.Run(ctx)
 	}
 
-	listener, err := d.listener()
-	if err != nil {
-		d.ef(err)
-		return
-	}
-
 	defer d.svr.GracefulStop()
 
 	go func() {
-		if err := d.svr.Serve(listener); err != nil {
+		if err := d.svr.Serve(d.lis); err != nil {
 			d.ef(err)
 			return
 		}
 	}()
 
 	<-ctx.Done()
-}
-
-func (d Daemon) listener() (net.Listener, error) {
-	if d.lis != nil {
-		return d.lis, nil
-	}
-
-	return net.Listen("tcp", fmt.Sprintf(":%d", d.port))
 }
 
 func defaultErrorFunc(err error) {

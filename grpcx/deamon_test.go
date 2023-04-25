@@ -25,7 +25,7 @@ func TestDaemon_Run_CancellingContext(t *testing.T) {
 	defer lis.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
-	dae := grpcx.NewDaemon(server, grpcx.WithListener(lis), grpcx.WithErrorFunc(func(err error) { t.Fatal(err) }))
+	dae := grpcx.NewDaemon(server, lis, grpcx.WithErrorFunc(func(err error) { t.Fatal(err) }))
 	go dae.Run(ctx)
 	cli := newTestClient(lis)
 
@@ -46,23 +46,6 @@ func TestDaemon_Run_CancellingContext(t *testing.T) {
 	a.Equal("call #1", resp1)
 	a.Equal("call #2", resp2)
 	a.EqualError(err, `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing closed"`)
-}
-
-func TestDaemon_Run_WithInvalidPort(t *testing.T) {
-	t.Parallel()
-	a := assert.New(t)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	server := exampleServer()
-	chErr := make(chan error)
-	dae := grpcx.NewDaemon(server, grpcx.WithPort(-1), grpcx.WithErrorFunc(func(err error) {
-		chErr <- err
-	}))
-
-	go dae.Run(ctx)
-
-	a.EqualError(<-chErr, "listen tcp: address -1: invalid port")
 }
 
 func testServer(callback chan func()) *grpc.Server {

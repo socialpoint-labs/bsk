@@ -21,7 +21,7 @@ func ExampleDaemon_Run() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	app := exampleApplication{}
-	dae := grpcx.NewDaemon(server, grpcx.WithListener(lis), grpcx.WithApplications(app))
+	dae := grpcx.NewDaemon(server, lis, grpcx.WithApplications(app))
 	go dae.Run(ctx)
 
 	exampleCall(ctx, lis)
