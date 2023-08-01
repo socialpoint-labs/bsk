@@ -4,16 +4,15 @@ run:
 
 linters:
   enable:
-    - unconvert
     - goconst
-    - misspell
-    - deadcode
-    #    - gci
-    - importas
+    - gocritic
     - gofmt
     - goimports
+    - importas
+    - misspell
     - prealloc
-    - gocritic
+    - unconvert
+    - unused
 
 linters-settings:
   errcheck:

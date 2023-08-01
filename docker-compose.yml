@@ -2,29 +2,13 @@ version: '3'
 
 services:
   starter:
-    image: dadarek/wait-for-dependencies
-    command: bsk:8080
+    image: dadarek/wait-for-dependencies:latest
+    command: localstack:4566
     environment:
       - SLEEP_LENGTH=5
       - TIMEOUT_LENGTH=300
     depends_on:
-      - bsk
       - localstack
-
-  bsk:
-    image: golang:${GO_VERSION-1.17}
-    depends_on:
-      - localstack
-    volumes:
-      - .:/code
-      - go-modules:/go/pkg/mod
-    working_dir: /code
-    command: >
-      bash -c "./docker_run.sh"
-    environment:
-      AWS_ACCESS_KEY_ID: x
-      AWS_SECRET_ACCESS_KEY: x
-      SP_BSK_AWS_ENDPOINT: http://localstack:4566
 
   localstack:
     image: localstack/localstack:0.13.1
@@ -47,4 +31,3 @@ services:
 
 volumes:
   localstack:
-  go-modules:

@@ -1,5 +1,5 @@
 PACKAGES=$(shell go list ./...)
-LINTER_VERSION=1.46.2
+LINTER_VERSION=1.53.3
 
 lint:
 	goimports -w .
@@ -21,6 +21,9 @@ ci-lint:
 	golangci-lint run
 .PHONY: ci-lint
 
+ci-test: export AWS_ACCESS_KEY_ID := x
+ci-test: export AWS_SECRET_ACCESS_KEY := x
+ci-test: export SP_BSK_AWS_ENDPOINT := http://localhost:4566
 ci-test:
 	echo "mode: count" > coverage-all.out
 	$(foreach pkg,$(PACKAGES),\
@@ -28,21 +31,12 @@ ci-test:
 		tail -n +2 coverage.out >> coverage-all.out;)
 .PHONY: ci-test
 
-ci-check: ci-lint ci-test
-.PHONY: ci-check
-
 install-tools:
 	go install github.com/GeertJohan/fgt@latest
 	go install golang.org/x/tools/cmd/cover@latest
 	go install golang.org/x/tools/cmd/goimports@latest
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v$(LINTER_VERSION)
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v$(LINTER_VERSION)
 .PHONY: install-tools
-
-install-tools-ci:
-	go install github.com/GeertJohan/fgt@latest
-	go install golang.org/x/tools/cmd/cover@latest
-	go install golang.org/x/tools/cmd/goimports@latest
-.PHONY: install-tools-ci
 
 ### Docker ###
 up:
@@ -54,7 +48,7 @@ up-build:
 .PHONY: up-build
 
 up-daemon:
-	docker-compose up --remove-orphans -d
+	docker-compose run --rm starter
 .PHONY: up-daemon
 
 down:
@@ -76,11 +70,3 @@ restart:
 bash:
 	docker-compose exec bsk bash
 .PHONY: bash
-
-docker-check:
-	docker-compose exec bsk bash -c "make check"
-.PHONY: docker-check
-
-docker-ci-test:
-	docker-compose exec -T bsk bash -c "make ci-test"
-.PHONY: docker-ci-test

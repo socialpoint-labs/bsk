@@ -45,7 +45,7 @@ func TestDaemon_Run_CancellingContext(t *testing.T) {
 
 	a.Equal("call #1", resp1)
 	a.Equal("call #2", resp2)
-	a.EqualError(err, `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing closed"`)
+	a.EqualError(err, `rpc error: code = Unavailable desc = connection error: desc = "transport: Error while dialing: closed"`)
 }
 
 func testServer(callback chan func()) *grpc.Server {

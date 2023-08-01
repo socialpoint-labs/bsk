@@ -8,28 +8,21 @@ on:
       - '**'
 
 env:
-  GO_VERSION: '1.17'
-  GOLANGCI_LINT_VERSION: 'v1.46.2'
+  GO_VERSION: '1.20'
 
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f # v2.3.4
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: Setup Go
-        uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8 # v2.1.3
+        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@5c56cd6c9dc07901af25baab6f2b0d9f3b7c3018 # v2.5.2
-        with:
-          version: ${{ env.GOLANGCI_LINT_VERSION }}
-          skip-go-installation: true
-          args: --build-tags integration --verbose --print-resources-usage --timeout 5m
       - name: Install tools
-        run: make install-tools-ci
+        run: make install-tools
       - name: Lint
         run: make ci-lint
 
@@ -38,13 +31,12 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout project
-        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f # v2.3.4
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - name: Setup Go
-        uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8 # v2.1.3
+        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: Up
-        uses: ./.github/actions/up
+      - name: Set up environment
+        run: make up-daemon
       - name: Run integration tests
-        run: |
-          make docker-ci-test
+        run: make ci-test

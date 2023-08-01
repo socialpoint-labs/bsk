@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sync"
 	"testing"
@@ -204,7 +204,7 @@ func TestFake(t *testing.T) {
 			assert.NoError(err)
 			assert.NotNil(resp)
 
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			assert.NoError(err)
 			assert.Equal(fake.Content, string(body))
 			assert.Equal(fake.StatusCode, resp.StatusCode)
@@ -227,7 +227,7 @@ func TestConcurrentFake(t *testing.T) {
 			assert.NoError(err)
 			assert.NotNil(resp)
 
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			assert.NoError(err)
 			assert.Equal("teapot", string(body))
 			assert.Equal(http.StatusTeapot, resp.StatusCode)
