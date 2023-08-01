@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
@@ -151,7 +150,7 @@ func Fake(fakeResponses ...FakeResponse) ClientDecorator {
 			}
 			resp := &http.Response{
 				StatusCode: fakeResponses[times].StatusCode,
-				Body:       ioutil.NopCloser(bytes.NewReader([]byte(fakeResponses[times].Content))),
+				Body:       io.NopCloser(bytes.NewReader([]byte(fakeResponses[times].Content))),
 			}
 			times++
 			return resp, nil

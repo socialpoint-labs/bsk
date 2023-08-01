@@ -3,7 +3,7 @@ package metrics_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -21,7 +21,7 @@ func TestPublisherWithNamespacedMetrics(t *testing.T) {
 		assert.True(strings.HasPrefix(name, namespace+"."))
 		return "", nil
 	}
-	publisher := metrics.NewPublisher(ioutil.Discard, encoder, time.Second, nil)
+	publisher := metrics.NewPublisher(io.Discard, encoder, time.Second, nil)
 	go publisher.Run(context.Background())
 
 	namespacedPublisher := metrics.WithNamespace(publisher, namespace)
@@ -44,7 +44,7 @@ func TestPublisherWithMultipleNamespaces(t *testing.T) {
 		assert.True(strings.HasPrefix(name, namespaces))
 		return "", nil
 	}
-	publisher := metrics.NewPublisher(ioutil.Discard, encoder, time.Second, nil)
+	publisher := metrics.NewPublisher(io.Discard, encoder, time.Second, nil)
 	go publisher.Run(context.Background())
 
 	namespacedPublisher := metrics.WithNamespace(publisher, namespace1)

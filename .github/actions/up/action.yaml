@@ -1,8 +1,0 @@
-name: "Put Docker environment up"
-description: "Puts the Docker environment up and waits for it to be ready"
-runs:
-  using: "composite"
-  steps:
-    - name: Up
-      shell: bash
-      run: $GITHUB_ACTION_PATH/up.sh

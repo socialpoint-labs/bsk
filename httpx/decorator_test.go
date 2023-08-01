@@ -3,7 +3,6 @@ package httpx_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -60,7 +59,7 @@ func TestCheckHeaderDecorator(t *testing.T) {
 
 	handler.ServeHTTP(w, r)
 	assert.Equal(w.Code, code)
-	content, err := ioutil.ReadAll(w.Body)
+	content, err := io.ReadAll(w.Body)
 	assert.NoError(err)
 	assert.Equal(string(content), "Internal Server Error")
 
@@ -72,7 +71,7 @@ func TestCheckHeaderDecorator(t *testing.T) {
 	w = httptest.NewRecorder()
 	handler.ServeHTTP(w, r)
 	assert.Equal(w.Code, http.StatusOK)
-	content, err = ioutil.ReadAll(w.Body)
+	content, err = io.ReadAll(w.Body)
 	assert.NoError(err)
 	assert.Equal(string(content), "")
 }

@@ -3,7 +3,7 @@ package logx_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -83,12 +83,12 @@ func TestLogLevel(t *testing.T) {
 	logger := logx.New(logx.WriterOpt(&buf))
 
 	logger.Info("test")
-	content, err := ioutil.ReadAll(&buf)
+	content, err := io.ReadAll(&buf)
 	a.NoError(err)
 	a.True(len(content) > 0)
 
 	logger.Error("test2")
-	content, err = ioutil.ReadAll(&buf)
+	content, err = io.ReadAll(&buf)
 	a.NoError(err)
 	a.True(len(content) > 0)
 
@@ -96,12 +96,12 @@ func TestLogLevel(t *testing.T) {
 
 	// since now the min level is error then a debug message won't be logged
 	logger.Info("test")
-	content, err = ioutil.ReadAll(&buf)
+	content, err = io.ReadAll(&buf)
 	a.NoError(err)
 	a.Len(content, 0)
 
 	logger.Error("test2")
-	content, err = ioutil.ReadAll(&buf)
+	content, err = io.ReadAll(&buf)
 	a.NoError(err)
 	a.True(len(content) > 0)
 }
@@ -114,12 +114,12 @@ func TestDummy(t *testing.T) {
 	logger := logx.NewDummy(logx.WriterOpt(&buf))
 
 	logger.Info("test")
-	content, err := ioutil.ReadAll(&buf)
+	content, err := io.ReadAll(&buf)
 	a.NoError(err)
 	a.Len(content, 0)
 
 	logger.Error("test2")
-	content, err = ioutil.ReadAll(&buf)
+	content, err = io.ReadAll(&buf)
 	a.NoError(err)
 	a.Len(content, 0)
 }

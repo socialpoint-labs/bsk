@@ -6,7 +6,6 @@ package logx
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"strings"
@@ -183,7 +182,7 @@ func NewDummy(opts ...Option) *Log {
 		options.marshaler = new(DummyMarshaler)
 	}
 	if options.writer == nil {
-		options.writer = ioutil.Discard
+		options.writer = io.Discard
 	}
 	if options.level == 0 {
 		options.level = DefaultMinLevel
