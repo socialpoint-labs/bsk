@@ -111,9 +111,9 @@ func WithErrorLogsUnary(l logx.Logger, options ...ErrorLogsOption) grpc.UnarySer
 					{Key: "ctx_response_error_message", Value: err.Error()},
 				}
 				if inCodeList(errCode, logOptions.debugLevelCodes) {
-					l.Info("gRPC Error", fields...)
+					l.Info("gRPC Error: "+err.Error(), fields...)
 				} else {
-					l.Error("gRPC Error", fields...)
+					l.Error("gRPC Error: "+err.Error(), fields...)
 				}
 			}
 		}
