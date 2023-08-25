@@ -199,7 +199,7 @@ func TestWithErrorLogsUnary(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`ERRO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, expectedCode, expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`ERRO gRPC Error: rpc error: code = Unknown desc = some error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, expectedCode, expectedErr.Error()))
 	})
 
 	t.Run("logs error on debug level if custom options added", func(t *testing.T) {
@@ -222,7 +222,7 @@ func TestWithErrorLogsUnary(t *testing.T) {
 
 		a.Error(err)
 		a.Equal(expectedResponse, resp)
-		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, expectedCode, expectedErr.Error()))
+		a.Contains(w.String(), fmt.Sprintf(`INFO gRPC Error: rpc error: code = NotFound desc = some error FIELDS ctx_full_method=%s ctx_request_content={"UserID":"%s"} ctx_response_content={"Result":"%s"} ctx_response_error_code=%s ctx_response_error_message=%s`, method, userID, okResult, expectedCode, expectedErr.Error()))
 	})
 
 	t.Run("do not log error if discarded options added", func(t *testing.T) {
