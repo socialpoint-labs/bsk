@@ -142,9 +142,9 @@ func WithErrorLogsStream(l logx.Logger, options ...ErrorLogsOption) grpc.StreamS
 					{Key: "ctx_error_code", Value: status.Code(err)},
 				}
 				if inCodeList(errCode, logOptions.debugLevelCodes) {
-					l.Info("gRPC Error", fields...)
+					l.Info("gRPC Error: "+err.Error(), fields...)
 				} else {
-					l.Error("gRPC Error", fields...)
+					l.Error("gRPC Error: "+err.Error(), fields...)
 				}
 			}
 		}
