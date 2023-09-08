@@ -148,10 +148,7 @@ func NewDataDogUnix(opts ...DatadogOption) *Publisher {
 		options.flushInterval = datadogFlush
 	}
 
-	conn, err := net.Dial("unixgram", options.unixAddress)
-	if err != nil {
-		panic(fmt.Sprintf("cannot create Unix client: `%s`", err.Error()))
-	}
+	conn := NewUDSWriter(options.unixAddress)
 
 	return NewPublisher(conn, StatsDEncoder, options.flushInterval, nil)
 }
