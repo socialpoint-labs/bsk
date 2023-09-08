@@ -1,6 +1,10 @@
 package metrics
 
-import "net"
+import (
+	"errors"
+	"net"
+	"syscall"
+)
 
 type UDSWriter struct {
 	address string
@@ -16,7 +20,7 @@ func (u *UDSWriter) Write(p []byte) (n int, err error) {
 
 	n, err = u.conn.Write(p)
 
-	if err != nil {
+	if err != nil && errors.Is(err, syscall.ECONNRESET) {
 		_ = u.conn.Close()
 		u.conn = nil
 	}
