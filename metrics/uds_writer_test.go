@@ -52,12 +52,22 @@ type listeningConnection struct {
 }
 
 func (lc *listeningConnection) open() {
-	lc.conn = arrangteListeningConnection(lc.t, lc.addr)
+	lc.conn = arrangeListeningUnixConnection(lc.t, lc.addr)
 }
 
 func (lc *listeningConnection) close() {
 	_ = lc.conn.Close()
+	lc.conn = nil
+
 	_ = os.Remove(lc.addr)
+}
+
+func (lc *listeningConnection) assertRead(s string) {
+	a := assert.New(lc.t)
+
+	bb, err := lc.read()
+	a.NoError(err)
+	a.Equal(s, string(bb))
 }
 
 func (lc *listeningConnection) read() ([]byte, error) {
@@ -70,21 +80,14 @@ func (lc *listeningConnection) read() ([]byte, error) {
 	return buf[:n], nil
 }
 
-func (lc *listeningConnection) assertRead(s string) {
-	a := assert.New(lc.t)
-
-	bb, err := lc.read()
-	a.NoError(err)
-	a.Equal(s, string(bb))
-}
-
 func arrangeListeningConnection(t testing.TB) *listeningConnection {
 	addr := arrangeUnixAddr(t)
+	conn := arrangeListeningUnixConnection(t, addr)
 
 	return &listeningConnection{
 		t:    t,
 		addr: addr,
-		conn: arrangteListeningConnection(t, addr),
+		conn: conn,
 	}
 }
 
@@ -101,7 +104,7 @@ func arrangeUnixAddr(t testing.TB) string {
 	return filepath.Join(d, "sock")
 }
 
-func arrangteListeningConnection(t testing.TB, addr string) *net.UnixConn {
+func arrangeListeningUnixConnection(t testing.TB, addr string) *net.UnixConn {
 	la, err := net.ResolveUnixAddr("unixgram", addr)
 	if err != nil {
 		t.Fatal(err)
