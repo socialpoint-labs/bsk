@@ -26,7 +26,10 @@ func Handler(l logx.Logger, opts ...Options) func() {
 
 	return func() {
 		if r := recover(); r != nil {
-			l.Error(fmt.Sprintf("%v", r), logx.F("stack_trace", strings.Split(string(debug.Stack()), "\n")))
+			l.Error(
+				fmt.Sprintf("go panic recovered: %v", r),
+				logx.F("ctx_stack_trace", strings.Split(string(debug.Stack()), "\n")),
+			)
 			o.exitFunc()
 		}
 	}
