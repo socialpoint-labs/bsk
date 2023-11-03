@@ -3,7 +3,6 @@ module github.com/socialpoint-labs/bsk
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go v1.44.313
 	github.com/stretchr/testify v1.7.0
 	google.golang.org/grpc v1.57.0
 )
@@ -11,7 +10,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
